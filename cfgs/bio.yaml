@@ -1,0 +1,6 @@
+model: mlp
+model_path: bio_model_first
+dataset_name: bio
+num_moments: 5
+range_size: 50
+constraint_weights: 1, .5, .25, .125, .0625, .03125

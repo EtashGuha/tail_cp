@@ -1,0 +1,7 @@
+model: mlp
+model_path: bio_model_less_moments_larger_weights
+dataset_name: bio
+num_moments: 3
+range_size: 50
+batch_size: 512
+constraint_weights: 1, 10, 10, 10

@@ -1,0 +1,14 @@
+model: mlp
+model_path: bio_model_less_moments_1051_weights_2000d
+dataset_name: bio
+num_moments: 3
+range_size: 50
+batch_size: 512
+max_epochs: 2000
+constraint_weights: 1, 10, 5, 1
+lr_scheduler: cosine
+ffn_activation: relu
+ffn_hidden_dim: 2000
+ffn_num_layers: 4
+lr: 1e-5
+dropout_prob: .25 

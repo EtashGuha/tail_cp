@@ -34,16 +34,3 @@ class Transformer(nn.Module):
         x = self.fc(x)
         return x
 
-# Example usage
-input_dim = 10
-output_dim = 100
-model = Transformer(input_dim, output_dim)
-
-# Generate a random input tensor
-input_tensor = torch.randn(20, input_dim)
-
-# Pass the input through the transformer model
-output_tensor = model(input_tensor)
-
-print("Input tensor shape:", input_tensor.shape)
-print("Output tensor shape:", output_tensor.shape)

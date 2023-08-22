@@ -1,0 +1,7 @@
+model: mlp
+model_path: model_state_dict
+dataset_name: diabetes
+num_moments: 5
+range_size: 50
+batch_size: 256
+constraint_weights: 1, .5, .25, .125, .0625, .03125
