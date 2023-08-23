@@ -20,7 +20,7 @@ def get_model(args):
     else:
         train_loader, val_loader = get_loaders(args)
         logger = TensorBoardLogger("tb_logs", name=args.model_path)
-        trainer = pl.Trainer(max_epochs=args.max_epochs, gpus=-1, logger=logger)
+        trainer = pl.Trainer(max_epochs=args.max_epochs, gpus=args.devices, logger=logger)
         trainer.fit(model, train_loader, val_loader)
         torch.save(model.state_dict(), total_path)
 
@@ -29,7 +29,6 @@ def get_model(args):
 
 if __name__ == '__main__':
     args = get_parser_args()
-
     model = get_model(args) 
     
     X_val, y_val = get_val_data(args)

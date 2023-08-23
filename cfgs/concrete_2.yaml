@@ -1,0 +1,8 @@
+model: mlp
+model_path: concrete_higher_moment_weights
+dataset_name: concrete
+num_moments: 5
+range_size: 50
+batch_size: 256
+constraint_weights: 1, 10, 5, 1, 1, 1
+devices: 1
