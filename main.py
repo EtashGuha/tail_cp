@@ -29,7 +29,6 @@ def get_model(args):
 
 if __name__ == '__main__':
     args = get_parser_args()
-
     model = get_model(args) 
     
     X_val, y_val = get_val_data(args)

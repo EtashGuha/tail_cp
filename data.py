@@ -4,6 +4,8 @@ from sklearn.datasets import load_diabetes
 import torch
 from sklearn.model_selection import train_test_split
 import pandas as pd
+import numpy as np
+
 def get_data(args):
     name = args.dataset_name
 
@@ -15,6 +17,11 @@ def get_data(args):
         df = pd.read_csv("datasets/CASP.csv")        
         y = df.iloc[:,0].values
         X = df.iloc[:,1:].values 
+    elif name == "concrete":
+        dataset = np.loadtxt(open('datasets/Concrete_Data.csv', "rb"), delimiter=",", skiprows=1)
+        X = dataset[:, :-1]
+        y = dataset[:, -1:]
+    
 
     scaler = StandardScaler()
     X_normalized = scaler.fit_transform(X)
