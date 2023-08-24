@@ -35,7 +35,6 @@ def get_parser_args():
     parser.add_argument('--dataset_name', type=str, required=True, help='Name of the dataset')
     parser.add_argument('--num_moments', type=int, required=True, help='Number of moments')
     parser.add_argument('--lr', type=float, default=1e-3, required=True, help='Number of moments')
-
     parser.add_argument('--constraint_weights', type=parse_float_list, required=True, help='List of constraint weights')
     
     args = parser.parse_args()
