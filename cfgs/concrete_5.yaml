@@ -1,0 +1,14 @@
+lr_scheduler: cosine
+ffn_activation: relu
+ffn_hidden_dim: 250
+ffn_num_layers: 2
+model: transformer
+model_path: concrete_higher_moment_weights_big_model_more_moments_transformer
+dataset_name: concrete
+num_moments: 5
+range_size: 30
+batch_size: 256
+constraint_weights: 1, 10, 5, 1, 1, 1
+devices: 1
+lr: 1e-4
+max_epochs: 2000

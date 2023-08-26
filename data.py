@@ -4,6 +4,7 @@ from sklearn.datasets import load_diabetes
 import torch
 from sklearn.model_selection import train_test_split
 import pandas as pd
+import pickle
 import numpy as np
 
 def get_data(args):
@@ -21,6 +22,12 @@ def get_data(args):
         dataset = np.loadtxt(open('datasets/Concrete_Data.csv', "rb"), delimiter=",", skiprows=1)
         X = dataset[:, :-1]
         y = dataset[:, -1:]
+    elif name == "bimodal":
+        with open("datasets/bimodal.pkl", "rb") as f:
+            X, y = pickle.load(f)
+
+
+
     
 
     scaler = StandardScaler()

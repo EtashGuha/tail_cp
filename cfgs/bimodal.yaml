@@ -1,0 +1,9 @@
+model: mlp
+model_path: bimodal_first
+dataset_name: bimodal
+num_moments: 3
+range_size: 50
+batch_size: 256
+constraint_weights: 1, 10, 5, 1
+devices: 1
+lr: 1e-5

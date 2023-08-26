@@ -1,0 +1,14 @@
+model: mlp
+model_path: bimodal_3
+dataset_name: bimodal
+num_moments: 2
+range_size: 20
+batch_size: 256
+constraint_weights: 1, 10, 5
+devices: 1
+lr: 1e-4
+max_epochs: 3000
+lr_scheduler: cosine
+ffn_activation: relu
+ffn_hidden_dim: 250
+ffn_num_layers: 3

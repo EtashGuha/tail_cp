@@ -8,7 +8,7 @@ from models.model import GenModule
 import os
 from sheets import log_results
 from cp import get_cp
-
+from plotter import plot_prob
 def get_model(args):
     input_size, range_vals = get_input_and_range(args)
 
@@ -34,4 +34,5 @@ if __name__ == '__main__':
     X_val, y_val = get_val_data(args)
     input_size, range_vals = get_input_and_range(args)
     mean_coverage, std_coverage, mean_length, std_length = get_cp(args, range_vals, X_val, y_val, model)
+    plot_prob(args, range_vals, X_val, y_val, model)
     log_results((args.dataset_name, args.model_path, mean_coverage, std_coverage, mean_length, std_length))
