@@ -1,7 +1,7 @@
 model: mlp
 model_path: bimodal_4
 dataset_name: bimodal
-loss_type: thomas-nr
+loss_type: thomas
 range_size: 20
 batch_size: 256
 devices: 1

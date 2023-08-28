@@ -50,8 +50,8 @@ def get_loaders(args):
     # Create a DataLoader for training and validation data
     train_dataset = TensorDataset(X_train, y_train)
     val_dataset = TensorDataset(X_val, y_val)
-    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=args.batch_size)
+    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=args.batch_size, num_workers=args.num_workers)
 
     return train_loader, val_loader
 

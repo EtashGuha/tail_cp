@@ -28,6 +28,7 @@ def plot_prob(args, range_vals, X_val, y_val, model):
         os.mkdir("images/{}/wrong".format(args.model_path))
     step_val = (max(range_vals) - min(range_vals))/len(range_vals)
     indices = (((y_val - min(range_vals)))/step_val).to(torch.int)
+    indices[indices == len(range_vals)] = indices[indices == len(range_vals)] - 1
     scores = torch.nn.functional.softmax(model(X_val), dim=1)
     all_scores = scores[torch.arange(len(X_val)), indices.long()]
 

@@ -28,6 +28,7 @@ def get_model(args):
     return model
 
 if __name__ == '__main__':
+    torch.set_float32_matmul_precision('medium')
     args = get_parser_args()
     model = get_model(args) 
     

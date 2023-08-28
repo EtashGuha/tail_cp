@@ -15,17 +15,17 @@ class GenModule(pl.LightningModule):
             model_class = MLPModel
         elif args.model == "transformer":
             model_class = Transformer
-
+        self.loss_type = args.loss_type
         self.model = model_class(args, input_size, len(range_vals))
         self.smax = torch.nn.Softmax(dim=1)
         self.register_buffer("range_vals",range_vals)
+        self.q = args.lq_norm_val
         self.arguments = args
         self.K = args.num_moments
         if args.constraint_weights is None:
             self.register_buffer("constraint_weights", torch.ones(self.K + 1)/(self.K+1))
         else:
             self.register_buffer("constraint_weights",torch.tensor(args.constraint_weights))
-        assert len(self.constraint_weights == self.K + 1)
 
     def forward(self, x):
         return self.model(x)
@@ -39,12 +39,16 @@ class GenModule(pl.LightningModule):
         x, y = batch
         probs = self.smax(self(x))
         neg_entropy = torch.sum(torch.sum(probs * torch.log2(probs), dim=1))
-        moment_losses = [neg_entropy]
+        all_losses = [neg_entropy]
         
-        for moment_index in range(self.K):
-            moment_losses.append(torch.sum(torch.square(torch.sum(probs * torch.pow(self.range_vals, moment_index + 1), axis=1) - torch.pow(y, moment_index+1))))
-        
-        loss = torch.sum(torch.stack(moment_losses) * self.constraint_weights)/len(batch)
+        if self.loss_type == "moment":
+            for moment_index in range(self.K):
+                all_losses.append(torch.sum(torch.square(torch.sum(probs * torch.pow(self.range_vals, moment_index + 1), axis=1) - torch.pow(y, moment_index+1))))
+        elif self.loss_type == "thomas":
+            all_losses.append(torch.sum(probs * torch.square(self.range_vals.view(1, -1).expand(len(y), -1) - y.view(-1, 1)))) 
+        elif self.loss_type == "thomas_lq":
+            all_losses.append(torch.sum(probs * torch.pow(torch.abs(self.range_vals.view(1, -1).expand(len(y), -1) - y.view(-1, 1)), self.q)) )
+        loss = torch.sum(torch.stack(all_losses) * self.constraint_weights)/len(batch)
         return loss
     
     def validation_step(self, batch, batch_idx):
