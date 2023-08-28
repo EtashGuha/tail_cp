@@ -9,8 +9,6 @@ __pycache__/
 # Distribution / packaging
 .Python
 build/
-model_paths/
-tb_logs/
 develop-eggs/
 dist/
 downloads/
@@ -26,9 +24,11 @@ share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-keys/
 MANIFEST
-
+models/__pycache__/*.pyc
+keys/
+model_paths/
+tb_logs/
 # PyInstaller
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
