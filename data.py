@@ -26,6 +26,9 @@ def get_data(args):
         with open("datasets/bimodal.pkl", "rb") as f:
             X, y = pickle.load(f)
 
+    elif name == "log_normal":
+        with open("datasets/tail.pkl", "rb") as f:
+            X, y = pickle.load(f)
 
 
     
