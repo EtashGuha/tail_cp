@@ -32,7 +32,7 @@ def get_data(args):
 
 
     
-
+    
     scaler = StandardScaler()
     X_normalized = scaler.fit_transform(X)
     y_normalized = scaler.fit_transform(y.reshape(-1, 1)).flatten()  # Reshape y for scaler

@@ -38,7 +38,7 @@ class GenModule(pl.LightningModule):
     def compute_loss(self, batch):
         x, y = batch
         probs = self.smax(self(x))
-        neg_entropy = torch.sum(torch.sum(probs * torch.log2(probs), dim=1))
+        neg_entropy = torch.sum(torch.sum(probs * torch.log(probs), dim=1))
         all_losses = [neg_entropy]
         
         if self.loss_type == "moment":

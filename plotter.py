@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import os
 from cp import percentile_excluding_index
 import torch
+from cp import calc_length_coverage
 
 import seaborn as sns
 def set_style():
@@ -43,14 +44,13 @@ def plot_prob(args, range_vals, X_val, y_val, model):
         plt.tight_layout()
 
         percentile_val = percentile_excluding_index(all_scores, i, alpha)
-        
+        coverage, length = calc_length_coverage(scores[i], range_vals, percentile_val, y_val[i])
 
         plt.plot([torch.min(range_vals).detach().numpy(), torch.max(range_vals).detach().numpy()], [percentile_val.detach().numpy(), percentile_val.detach().numpy()], label="cutoff")
         plt.plot([y_val[i].detach().numpy(), y_val[i].detach().numpy()], [torch.min(scores).detach().numpy(), torch.max(scores).detach().numpy()], label="truth")
         plt.legend()
-        cp_vals = range_vals[torch.where(scores[i] > percentile_val)]
-        top_range, bottom_range = max(cp_vals), min(cp_vals)
-        if top_range >= y_val[i] and y_val[i] >= bottom_range:
+        
+        if coverage == 1:
             plt.savefig("images/{}/right/{}.png".format(args.model_path, i))
         else:
             plt.savefig("images/{}/wrong/{}.png".format(args.model_path, i))

@@ -34,8 +34,21 @@ def find_intervals(data, cutoff):
         
 
     return intervals
-def get_cp(args, range_vals, X_val, y_val, model):
 
+def calc_length_coverage(probs, range_vals, percentile_val, true_label):
+    intervals = find_intervals(probs, percentile_val)
+    if len(intervals) == 0:
+        return 1, torch.tensor(range_vals[-1] - range_vals[0])
+    else:
+        length = 0
+        cov_val = 0
+        for interval in intervals:
+            length += range_vals[interval[1]]- range_vals[interval[0]]
+            if range_vals[interval[1]]  >= true_label and true_label >= range_vals[interval[0]]:
+                cov_val =1
+        return cov_val, length
+    
+def get_cp(args, range_vals, X_val, y_val, model):
     step_val = (max(range_vals) - min(range_vals))/len(range_vals)
     indices = (((y_val - min(range_vals)))/step_val).to(torch.int)
     indices[indices == len(range_vals)] = indices[indices == len(range_vals)] - 1
@@ -45,16 +58,10 @@ def get_cp(args, range_vals, X_val, y_val, model):
     
     alpha = args.alpha
     lengths = []
-    coverage = []
+    coverages = []
     for i in range(len(X_val)):
         percentile_val = percentile_excluding_index(all_scores, i, alpha)
-        intervals = find_intervals(scores[i], percentile_val)
-        length = 0
-        cov_val = 0
-        for interval in intervals:
-            length += range_vals[interval[1]]- range_vals[interval[0]]
-            if range_vals[interval[1]]  >= y_val[i] and y_val[i] >= range_vals[interval[0]]:
-                cov_val =1
-        coverage.append(cov_val)
+        coverage, length = calc_length_coverage(scores[i], range_vals, percentile_val, y_val[i])
+        coverages.append(coverage)
         lengths.append(length)
-    return np.mean(coverage).item(), np.std(coverage).item(), torch.mean(torch.stack(lengths)).item(), torch.std(torch.stack(lengths)).item()
+    return np.mean(coverages).item(), np.std(coverages).item(), torch.mean(torch.stack(lengths)).item(), torch.std(torch.stack(lengths)).item()
