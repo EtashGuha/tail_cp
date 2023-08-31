@@ -15,7 +15,11 @@ def get_parser_args():
     )
 
     parser.add_argument('--model', type=str, required=True, help='Name of the model')
+    parser.add_argument('--early_stopping', action='store_true', help='Name of the model')
     parser.add_argument('--alpha', type=float, default=.1, help='Name of the model')
+    parser.add_argument('--annealing', action="store_true", help='Name of the model')
+    parser.add_argument('--annealing_epochs', type=int, default=500, help='Name of the model')
+
     parser.add("--ffn_activation", choices=["relu", "sigmoid"], default="relu",
                help="The activation function to use in the FFN.")
     parser.add("--ffn_hidden_dim", default=256, type=int,

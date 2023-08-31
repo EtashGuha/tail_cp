@@ -19,6 +19,11 @@ class GenModule(pl.LightningModule):
         self.model = model_class(args, input_size, len(range_vals))
         self.smax = torch.nn.Softmax(dim=1)
         self.register_buffer("range_vals",range_vals)
+        self.annealing = args.annealing
+        if self.annealing:
+            self.initial_temperature = 1
+            self.annealing_epochs = args.annealing_epochs
+
         self.q = args.lq_norm_val
         self.arguments = args
         self.K = args.num_moments
@@ -26,7 +31,7 @@ class GenModule(pl.LightningModule):
             self.register_buffer("constraint_weights", torch.ones(self.K + 1)/(self.K+1))
         else:
             self.register_buffer("constraint_weights",torch.tensor(args.constraint_weights))
-
+        self.register_buffer("zero_vec", torch.tensor(0))
     def forward(self, x):
         return self.model(x)
 
@@ -38,8 +43,14 @@ class GenModule(pl.LightningModule):
     def compute_loss(self, batch):
         x, y = batch
         probs = self.smax(self(x))
-        neg_entropy = torch.sum(torch.sum(probs * torch.log(probs), dim=1))
-        all_losses = [neg_entropy]
+
+        if self.annealing:
+            self.constraint_weights[0] = max(0, (self.initial_temperature * (1 - self.current_epoch / self.annealing_epochs)))
+        if self.constraint_weights[0] == 0:
+            all_losses = [self.zero_vec]
+        else:
+            neg_entropy = torch.sum(torch.sum(probs * torch.log(probs), dim=1))
+            all_losses = [neg_entropy]
         
         if self.loss_type == "moment":
             for moment_index in range(self.K):
@@ -47,6 +58,9 @@ class GenModule(pl.LightningModule):
         elif self.loss_type == "thomas":
             all_losses.append(torch.sum(probs * torch.square(self.range_vals.view(1, -1).expand(len(y), -1) - y.view(-1, 1)))) 
         elif self.loss_type == "thomas_lq":
+            all_losses.append(torch.sum(probs * torch.pow(torch.abs(self.range_vals.view(1, -1).expand(len(y), -1) - y.view(-1, 1)), self.q)) )
+        elif self.loss_type == "cross_entropy":
+            
             all_losses.append(torch.sum(probs * torch.pow(torch.abs(self.range_vals.view(1, -1).expand(len(y), -1) - y.view(-1, 1)), self.q)) )
         loss = torch.sum(torch.stack(all_losses) * self.constraint_weights)/len(batch)
         return loss

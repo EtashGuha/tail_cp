@@ -9,6 +9,8 @@ import os
 from sheets import log_results
 from cp import get_cp
 from plotter import plot_prob
+from models.callbacks import get_callbacks
+torch.autograd.set_detect_anomaly(True)
 def get_model(args):
     input_size, range_vals = get_input_and_range(args)
 
@@ -18,9 +20,11 @@ def get_model(args):
     if os.path.exists(total_path):
         model.load_state_dict(torch.load(total_path))
     else:
+        
         train_loader, val_loader = get_loaders(args)
         logger = TensorBoardLogger("tb_logs", name=args.model_path)
-        trainer = pl.Trainer(max_epochs=args.max_epochs, gpus=args.devices, logger=logger)
+        callbacks = get_callbacks(args)
+        trainer = pl.Trainer(max_epochs=args.max_epochs, gpus=args.devices, logger=logger, callbacks=callbacks)
         trainer.fit(model, train_loader, val_loader)
         torch.save(model.state_dict(), total_path)
 
@@ -30,6 +34,7 @@ def get_model(args):
 if __name__ == '__main__':
     torch.set_float32_matmul_precision('medium')
     args = get_parser_args()
+
     model = get_model(args) 
     
     X_val, y_val = get_val_data(args)
