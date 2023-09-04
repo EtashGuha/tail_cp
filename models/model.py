@@ -23,6 +23,8 @@ class GenModule(pl.LightningModule):
         if self.annealing:
             self.initial_temperature = 1
             self.annealing_epochs = args.annealing_epochs
+        if self.loss_type == "cross_entropy_quantile":
+            self.register_buffer("alpha", torch.tensor(args.alpha))
 
         self.q = args.lq_norm_val
         self.arguments = args
@@ -31,7 +33,7 @@ class GenModule(pl.LightningModule):
             self.register_buffer("constraint_weights", torch.ones(self.K + 1)/(self.K+1))
         else:
             self.register_buffer("constraint_weights",torch.tensor(args.constraint_weights))
-        self.register_buffer("zero_vec", torch.tensor(0))
+            
     def forward(self, x):
         return self.model(x)
 
@@ -42,16 +44,17 @@ class GenModule(pl.LightningModule):
 
     def compute_loss(self, batch):
         x, y = batch
-        probs = self.smax(self(x))
+        pre_probs = self(x)
+        probs = self.smax(pre_probs)
 
         if self.annealing:
             self.constraint_weights[0] = max(0, (self.initial_temperature * (1 - self.current_epoch / self.annealing_epochs)))
-        if self.constraint_weights[0] == 0:
-            all_losses = [self.zero_vec]
-        else:
-            neg_entropy = torch.sum(torch.sum(probs * torch.log(probs), dim=1))
-            all_losses = [neg_entropy]
-        
+        log_vals = torch.log(probs)
+        log_vals[probs == 0] = 0
+        neg_entropy = torch.sum(torch.sum(probs * log_vals, dim=1))
+        all_losses = [neg_entropy]
+        if torch.isnan(neg_entropy).any():
+            breakpoint()
         if self.loss_type == "moment":
             for moment_index in range(self.K):
                 all_losses.append(torch.sum(torch.square(torch.sum(probs * torch.pow(self.range_vals, moment_index + 1), axis=1) - torch.pow(y, moment_index+1))))
@@ -60,8 +63,22 @@ class GenModule(pl.LightningModule):
         elif self.loss_type == "thomas_lq":
             all_losses.append(torch.sum(probs * torch.pow(torch.abs(self.range_vals.view(1, -1).expand(len(y), -1) - y.view(-1, 1)), self.q)) )
         elif self.loss_type == "cross_entropy":
-            
-            all_losses.append(torch.sum(probs * torch.pow(torch.abs(self.range_vals.view(1, -1).expand(len(y), -1) - y.view(-1, 1)), self.q)) )
+            step_val = (max(self.range_vals) - min(self.range_vals))/(len(self.range_vals) - 1)
+            indeces = torch.round((y - min(self.range_vals))/step_val)
+            all_scores = torch.nn.functional.cross_entropy(pre_probs, indeces.long())
+            all_losses.append(all_scores)
+
+        elif self.loss_type == "cross_entropy_quantile":
+            step_val = (max(self.range_vals) - min(self.range_vals))/(len(self.range_vals) - 1)
+            indices_up = torch.ceil((y - min(self.range_vals))/step_val)
+            indices_down = torch.floor((y - min(self.range_vals))/step_val)
+            how_much_each_direction = (y - min(self.range_vals))/step_val - indices_down
+
+            weight_up = how_much_each_direction
+            weight_down = 1 - how_much_each_direction
+            all_scores = -1 * torch.quantile(probs[torch.arange(len(probs)), indices_up.long()] * weight_up + probs[torch.arange(len(probs)), indices_down.long()] * weight_down, self.alpha)
+            all_losses.append(all_scores)
+
         loss = torch.sum(torch.stack(all_losses) * self.constraint_weights)/len(batch)
         return loss
     
@@ -72,7 +89,13 @@ class GenModule(pl.LightningModule):
         return loss
     
     def configure_optimizers(self):
-        optimizer = optim.Adam(self.parameters(), lr=self.arguments.lr)
+        if self.arguments.optimizer == "adam":
+            optimizer = optim.Adam(self.parameters(), lr=self.arguments.lr, weight_decay=self.arguments.weight_decay)
+        elif self.arguments.optimizer =="adamw":
+            optimizer = optim.AdamW(self.parameters(), lr=self.arguments.lr, weight_decay=self.arguments.weight_decay)
+        elif self.arguments.optimizer == "sgd":
+            optimizer = optim.SGD(self.parameters(), lr=self.arguments.lr, weight_decay=self.arguments.weight_decay)
+
         if self.arguments.lr_scheduler == "cosine":
             scheduler = CosineAnnealingLR(
                 optimizer,
@@ -97,4 +120,5 @@ class GenModule(pl.LightningModule):
                 self.arguments.lr_steps,
                 gamma=self.arguments.lr_drop,
             )
+        
         return [optimizer],[scheduler]

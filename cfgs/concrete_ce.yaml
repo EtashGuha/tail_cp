@@ -1,0 +1,16 @@
+batch_size: 32
+constraint_weights: 1, 5
+annealing_epochs: 2
+annealing: True
+dataset_name: concrete
+devices: 1
+ffn_activation: relu
+ffn_hidden_dim: 1024
+ffn_num_layers: 3
+loss_type: cross_entropy
+lq_norm_val: 0.5
+lr: 0.001
+max_epochs: 500
+model: mlp
+model_path: concrete_ce
+range_size: 150

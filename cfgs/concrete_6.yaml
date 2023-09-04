@@ -1,0 +1,11 @@
+model: mlp
+model_path: concrete_6
+dataset_name: concrete
+loss_type: thomas_lq
+range_size: 50
+batch_size: 32
+devices: 1
+lr: 1e-4
+constraint_weights: 1, 5
+max_epochs: 500
+lq_norm_val: .5

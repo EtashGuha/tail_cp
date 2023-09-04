@@ -19,7 +19,7 @@ def get_parser_args():
     parser.add_argument('--alpha', type=float, default=.1, help='Name of the model')
     parser.add_argument('--annealing', action="store_true", help='Name of the model')
     parser.add_argument('--annealing_epochs', type=int, default=500, help='Name of the model')
-
+    parser.add_argument('--weight_decay', type=float, default=0.0, help='Name of the model')
     parser.add("--ffn_activation", choices=["relu", "sigmoid"], default="relu",
                help="The activation function to use in the FFN.")
     parser.add("--ffn_hidden_dim", default=256, type=int,
@@ -45,6 +45,8 @@ def get_parser_args():
     parser.add_argument('--max_epochs', type=int, default=1000, help='Name of the model')
     parser.add_argument('--test_size', type=float, default=.2, help='Name of the model')
     parser.add_argument('--model_path', type=str, required=True, help='Name of the model')
+    parser.add_argument('--optimizer', type=str, default="adam", help='Name of the model')
+
     parser.add_argument('--range_size', type=int, required=True, help='Name of the model')
     parser.add_argument('--dataset_name', type=str, required=True, help='Name of the dataset')
     parser.add_argument('--num_moments', type=int, help='Number of moments')

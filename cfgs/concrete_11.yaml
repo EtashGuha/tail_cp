@@ -1,0 +1,17 @@
+model: mlp
+model_path: concrete_11_again3
+dataset_name: concrete
+loss_type: thomas_lq
+optimizer: adamw
+range_size: 50
+batch_size: 16
+devices: 1
+lr: 1e-5
+ffn_activation: relu
+ffn_hidden_dim: 2000
+ffn_num_layers: 4
+constraint_weights: .2, 1
+max_epochs: 5000
+lq_norm_val: .5
+weight_decay: 1e-1
+dropout_prob: .05

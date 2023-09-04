@@ -1,0 +1,14 @@
+batch_size: 32
+constraint_weights: 1, 20
+dataset_name: concrete
+devices: 1
+ffn_activation: relu
+ffn_hidden_dim: 3060
+ffn_num_layers: 4
+loss_type: thomas_lq
+lq_norm_val: 0.5
+lr: 0.001
+max_epochs: 5000
+model: mlp
+model_path: search_concrete_aga2_247
+range_size: 100
