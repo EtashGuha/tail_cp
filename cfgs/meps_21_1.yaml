@@ -1,0 +1,14 @@
+model: mlp
+model_path: meps_21_1
+dataset_name: meps_21
+loss_type: thomas_lq
+range_size: 50
+batch_size: 256
+devices: 1
+lr: 1e-7
+ffn_activation: relu
+ffn_hidden_dim: 1000
+ffn_num_layers: 4
+constraint_weights: 1, 5
+max_epochs: 3000
+lq_norm_val: .5
