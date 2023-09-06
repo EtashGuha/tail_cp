@@ -27,6 +27,7 @@ share/python-wheels/
 MANIFEST
 keys/
 model_paths/
+cqr_models/
 tb_logs/
 images/
 # PyInstaller
