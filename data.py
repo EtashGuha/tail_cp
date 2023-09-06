@@ -165,6 +165,8 @@ def get_data(args):
         
         y = df[response_name].values
         X = df[col_names].values
+    elif dataset == "parkinsons":
+        
     scaler = StandardScaler()
     X_normalized = scaler.fit_transform(X)
     y_normalized = scaler.fit_transform(y.reshape(-1, 1)).flatten()  # Reshape y for scaler
