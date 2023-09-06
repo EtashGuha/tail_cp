@@ -7,6 +7,7 @@ import pandas as pd
 import pickle
 import numpy as np
 from sklearn.impute import SimpleImputer
+from uci_datasets import Dataset
 
 def get_data(args):
     name = args.dataset_name
@@ -165,8 +166,14 @@ def get_data(args):
         
         y = df[response_name].values
         X = df[col_names].values
-    elif dataset == "parkinsons":
-        
+    elif name == "parkinsons":
+        data = Dataset("parkinsons")
+        X = data.x
+        y = data.y
+    elif name == "solar":
+        data = Dataset("solar")
+        X = data.x
+        y = data.y
     scaler = StandardScaler()
     X_normalized = scaler.fit_transform(X)
     y_normalized = scaler.fit_transform(y.reshape(-1, 1)).flatten()  # Reshape y for scaler
