@@ -48,19 +48,20 @@ def plot_prob(args, range_vals, X_val, y_val, model, cqr_lower=None,cqr_upper=No
         plt.clf()
         plt.plot(range_vals.detach().numpy(), scores[i].detach().numpy(), label="ours")
         plt.xlabel(r'$y$')
-        plt.ylabel(r'$\mathbb{P}(y|x)$')
-        
+        plt.ylabel(r'$\mathbb{P}(y \mid x_{n+1})$')
+        plt.grid(None)
         plt.tight_layout()
 
         percentile_val = percentile_excluding_index(all_scores, i, alpha)
         coverage, length = calc_length_coverage(scores[i], range_vals, percentile_val, y_val[i])
 
-        plt.plot([torch.min(range_vals).detach().numpy(), torch.max(range_vals).detach().numpy()], [percentile_val.detach().numpy(), percentile_val.detach().numpy()], label="cutoff")
-        plt.plot([y_val[i].detach().numpy(), y_val[i].detach().numpy()], [torch.min(scores).detach().numpy(), torch.max(scores).detach().numpy()], label="truth")
         if cqr_lower is not None:
             plt.plot([cqr_lower[i], cqr_lower[i]], [torch.min(scores).detach().numpy(), torch.max(scores).detach().numpy()], label="cqr lower", color="red")
         if cqr_upper is not None:
             plt.plot([cqr_upper[i], cqr_upper[i]], [torch.min(scores).detach().numpy(), torch.max(scores).detach().numpy()], label="cqr upper", color="red")
+        plt.plot([torch.min(range_vals).detach().numpy(), torch.max(range_vals).detach().numpy()], [percentile_val.detach().numpy(), percentile_val.detach().numpy()], label=r'Confidence Level $\alpha$')
+        plt.plot([y_val[i].detach().numpy(), y_val[i].detach().numpy()], [torch.min(scores).detach().numpy(), torch.max(scores).detach().numpy()], label=r'Ground Truth $y_{n+1}$')
+
         plt.legend()
         
         if coverage == 1:
