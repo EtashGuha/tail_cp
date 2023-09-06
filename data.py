@@ -166,11 +166,11 @@ def get_data(args):
         
         y = df[response_name].values
         X = df[col_names].values
-    elif dataset == "parkinsons":
+    elif name == "parkinsons":
         data = Dataset("parkinsons")
         X = data.x
         y = data.y
-    elif dataset == "solar":
+    elif name == "solar":
         data = Dataset("solar")
         X = data.x
         y = data.y
