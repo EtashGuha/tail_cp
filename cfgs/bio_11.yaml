@@ -5,7 +5,7 @@ loss_type: thomas_lq
 range_size: 50
 batch_size: 16
 devices: 1
-lr: 1e-5
+lr: 1e-7
 ffn_activation: relu
 ffn_hidden_dim: 2500
 ffn_num_layers: 4
