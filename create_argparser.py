@@ -38,7 +38,7 @@ def get_parser_args():
                help="The number of layers in the FFN.")
     parser.add("--dropout_prob", default=0, type=float,
                help="The probability by which a node will be dropped out.")
-    parser.add("--lr_scheduler", choices=["cosine", "cosine_warmup", "linear", "step"], default="cosine",
+    parser.add("--lr_scheduler", choices=["cosine", "cosine_warmup", "linear", "step", "absent"], default="cosine",
                help="The name of the LR scheduler to utilize.")
     parser.add_argument('--batch_size', type=int, default=32, help='Name of the model') 
     parser.add_argument('--bias', type=bool, default=True, help='Name of the model')
