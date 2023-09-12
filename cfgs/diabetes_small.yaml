@@ -1,0 +1,17 @@
+model: mlp
+model_path: diabetes_small
+dataset_name: diabetes
+loss_type: thomas_lq
+range_size: 30
+batch_size: 64
+devices: 1
+lr: 5e-4
+constraint_weights: 1, 5
+max_epochs: 1000
+lq_norm_val: .5
+ffn_num_layers: 3
+ffn_hidden_dim: 64
+weight_decay: 1e-6
+optimizer: adam
+lr_scheduler: absent
+dropout_prob: .1

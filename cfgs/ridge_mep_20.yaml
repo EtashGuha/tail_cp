@@ -1,0 +1,3 @@
+dataset_name: meps_20
+ridge: True
+model_path: ridge_meps_20

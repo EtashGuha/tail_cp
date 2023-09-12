@@ -120,5 +120,7 @@ class GenModule(pl.LightningModule):
                 self.arguments.lr_steps,
                 gamma=self.arguments.lr_drop,
             )
+        elif self.arguments.lr_scheduler == "absent":
+            return optimizer
         
         return [optimizer],[scheduler]

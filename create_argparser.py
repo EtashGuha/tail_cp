@@ -14,10 +14,13 @@ def get_parser_args():
         config_arg_is_required=True,
     )
 
-    parser.add_argument('--model', type=str, required=True, help='Name of the model')
+    parser.add_argument('--model', type=str, help='Name of the model')
     parser.add_argument('--early_stopping', action='store_true', help='Name of the model')
     parser.add_argument('--alpha', type=float, default=.1, help='Name of the model')
     parser.add_argument('--annealing', action="store_true", help='Name of the model')
+    parser.add_argument('--lei', action="store_true", help='Name of the model')
+    parser.add_argument('--ridge', action="store_true", help='Name of the model')
+
     parser.add_argument('--annealing_epochs', type=int, default=500, help='Name of the model')
     parser.add_argument('--weight_decay', type=float, default=0.0, help='Name of the model')
     parser.add("--ffn_activation", choices=["relu", "sigmoid"], default="relu",
@@ -43,11 +46,18 @@ def get_parser_args():
     parser.add_argument('--batch_size', type=int, default=32, help='Name of the model') 
     parser.add_argument('--bias', type=bool, default=True, help='Name of the model')
     parser.add_argument('--max_epochs', type=int, default=1000, help='Name of the model')
+    parser.add_argument('--seed', type=int, default=42, help='Name of the model')
+
     parser.add_argument('--test_size', type=float, default=.2, help='Name of the model')
-    parser.add_argument('--model_path', type=str, required=True, help='Name of the model')
+    parser.add_argument('--model_path', type=str, help='Name of the model')
+    parser.add_argument('--ablation_name', type=str, help='Name of the model')
+    parser.add_argument('--ablation_parameter', type=str, help='Name of the model')
+    parser.add_argument('--ablation_values', type=parse_float_list, help='Name of the model')
+
+
     parser.add_argument('--optimizer', type=str, default="adam", help='Name of the model')
 
-    parser.add_argument('--range_size', type=int, required=True, help='Name of the model')
+    parser.add_argument('--range_size', type=int, default=50, help='Name of the model')
     parser.add_argument('--dataset_name', type=str, required=True, help='Name of the dataset')
     parser.add_argument('--num_moments', type=int, help='Number of moments')
     parser.add_argument('--lr', type=float, default=1e-3, help='Number of moments')

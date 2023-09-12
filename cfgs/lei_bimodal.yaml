@@ -1,0 +1,4 @@
+dataset_name: bimodal
+lei: True
+range_size: 20
+model_path: lei_bimodal_20

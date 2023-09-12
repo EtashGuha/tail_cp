@@ -1,0 +1,3 @@
+dataset_name: bio
+ridge: True
+model_path: ridge_bio

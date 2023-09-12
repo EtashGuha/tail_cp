@@ -11,6 +11,10 @@ from cp import get_cp
 from plotter import plot_prob
 from models.callbacks import get_callbacks
 from baselines.lei import lei
+from baselines.ridge import conf_pred
+import random
+import numpy as np
+
 torch.autograd.set_detect_anomaly(True)
 def get_model(args):
     input_size, range_vals = get_input_and_range(args)
@@ -32,17 +36,35 @@ def get_model(args):
     model.eval()
     return model
 
+def seed_everything(seed=42):
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+
+
+def main(args):
+    X_val, y_val = get_val_data(args)
+    input_size, range_vals = get_input_and_range(args)
+    if args.lei:
+        mean_coverage, std_coverage, mean_length, std_length = lei(args)
+        log_results((args.dataset_name, args.model_path, mean_coverage, std_coverage, mean_length, std_length))
+    elif args.ridge:  
+        mean_coverage, std_coverage, mean_length, std_length = conf_pred(args, lambda_=.1)
+        log_results((args.dataset_name, args.model_path, mean_coverage, std_coverage, mean_length, std_length))
+    else:  
+        model = get_model(args) 
+        mean_coverage, std_coverage, mean_length, std_length = get_cp(args, range_vals, X_val, y_val, model)
+        plot_prob(args, range_vals, X_val, y_val, model)
+        log_results((args.dataset_name, args.model_path, mean_coverage, std_coverage, mean_length, std_length))
+    return mean_coverage, std_coverage, mean_length, std_length
 if __name__ == '__main__':
     torch.set_float32_matmul_precision('medium')
     args = get_parser_args()
-
-    model = get_model(args) 
+    seed_everything(args.seed)
+    main(args)
     
-    X_val, y_val = get_val_data(args)
-    input_size, range_vals = get_input_and_range(args)
-    mean_coverage, std_coverage, mean_length, std_length = lei(args)
-    log_results((args.dataset_name, "lei", mean_coverage, std_coverage, mean_length, std_length))
-    
-    mean_coverage, std_coverage, mean_length, std_length = get_cp(args, range_vals, X_val, y_val, model)
-    plot_prob(args, range_vals, X_val, y_val, model)
-    log_results((args.dataset_name, args.model_path, mean_coverage, std_coverage, mean_length, std_length))
