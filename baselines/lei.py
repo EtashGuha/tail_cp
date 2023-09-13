@@ -10,7 +10,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 import warnings
-# warnings.filterwarnings("ignore", category=UserWarning)
+
 def row_differences(matrix, initial_matrix=None):
     if initial_matrix is None:
         n, d = matrix.shape
@@ -36,18 +36,6 @@ def nd_kernel_single(x, y, allX, ally):
     diff_x = np.sum(np.exp(-1 * np.sum(np.square(x - allX), dim=1)))
     diff_y = np.sum(np.exp(-1 * np.sum(np.square(y - ally), dim=1)))
     return (diff_x * diff_y).item()
-
-# def nd_kernel_sci(X, y):
-#     kde = KernelDensity(kernel='gaussian', bandwidth=.1, atol=1e-5).fit(X)
-#     X_scores = np.exp(kde.score_samples(X))
-#     kde = KernelDensity(kernel='gaussian', bandwidth=.1, atol=1e-5).fit(y)
-#     y_scores = np.exp(kde.score_samples(y))
-#     return np.tensor(X_scores * y_scores)
-
-# def nd_kernel_single_sci(x, y, kdex, kdey):
-#     X_scores = np.exp(kdex.score_samples(x.reshape(1, -1)))
-#     y_scores = np.exp(kdey.score_samples(y.reshape(1, -1)))
-#     return np.tensor(X_scores * y_scores)
 
 def plot(args, i, all_label_scores, range_vals, cutoff):
     if not os.path.exists("images/{}".format(args.dataset_name)):
@@ -87,11 +75,6 @@ def get_cov_len(i, args, range_vals, X_train, y_train, X_val, y_val):
     for r in range_vals:
         X_aug = np.concatenate((X_train, np.expand_dims(np.asarray(X_val[i]), 0)))
         y_aug = np.concatenate((y_train, np.expand_dims(np.asarray([r]), 0)))
-        # kde_x = KernelDensity(kernel='gaussian', bandwidth=.1, rtol=1e-1).fit(X_aug)
-        # kde_y = KernelDensity(kernel='gaussian', bandwidth=.1, rtol=1e-1).fit(y_aug)
-        # X_scores = np.exp(kde_x.score_samples(X_aug))
-        # y_scores = np.exp(kde_y.score_samples(y_aug))
-        # all_scores = X_scores * y_scores
         all_scores = nd_kernel(X_aug, y_aug, h=.1)
         sorted_indices = np.argsort(all_scores)
         relative_rank = np.where(sorted_indices == len(X_aug)- 1)[0].item()/(len(X_aug) - 1)
@@ -126,15 +109,8 @@ def lei(args):
     
     num_processes = 10
 
-    # coverages = []
-    # lengths = []
-    # for i in tqdm(range(len(X_val))):
-    #     coverage, length = real_get_cov_len_fast(i)
-    #     coverages.append(coverage)
-    #     lengths.append(length)
-    # Create a Pool of worker processes
+
     with multiprocessing.Pool(processes=num_processes) as pool:
-        # Use tqdm to create a progress bar
         results = list(tqdm(pool.imap(real_get_cov_len_fast, list(range(len(X_val)))), total=(len(X_val))))
     coverages = [res[0] for res in results]
     lengths = [res[1] for res in results]

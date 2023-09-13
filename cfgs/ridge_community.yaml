@@ -1,3 +1,0 @@
-dataset_name: community
-ridge: True
-model_path: ridge_community

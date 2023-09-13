@@ -1,3 +1,0 @@
-dataset_name: parkinsons
-ridge: True
-model_path: ridge_parkinsons

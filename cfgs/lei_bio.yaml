@@ -1,4 +1,0 @@
-dataset_name: bio
-lei: True
-range_size: 50
-model_path: lei_bio

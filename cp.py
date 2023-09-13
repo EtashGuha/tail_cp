@@ -49,20 +49,25 @@ def calc_length_coverage(probs, range_vals, percentile_val, true_label):
                 cov_val = 1
         return cov_val, length
     
-def get_cp(args, range_vals, X_val, y_val, model):
+def get_all_scores(range_vals, X, y, model):
     step_val = (max(range_vals) - min(range_vals))/(len(range_vals) - 1)
-    indices_up = torch.ceil((y_val - min(range_vals))/step_val)
-    indices_down = torch.floor((y_val - min(range_vals))/step_val)
+    indices_up = torch.ceil((y - min(range_vals))/step_val)
+    indices_down = torch.floor((y - min(range_vals))/step_val)
     
-    how_much_each_direction = (y_val - min(range_vals))/step_val - indices_down
+    how_much_each_direction = (y - min(range_vals))/step_val - indices_down
 
     weight_up = how_much_each_direction
     weight_down = 1 - how_much_each_direction
 
 
-    scores = torch.nn.functional.softmax(model(X_val), dim=1)
-    all_scores = scores[torch.arange(len(X_val)), indices_up.long()] * weight_up + scores[torch.arange(len(X_val)), indices_down.long()] * weight_down
+    scores = torch.nn.functional.softmax(model(X), dim=1)
+    all_scores = scores[torch.arange(len(X)), indices_up.long()] * weight_up + scores[torch.arange(len(X_val)), indices_down.long()] * weight_down
     
+    return scores, all_scores
+def get_cp(args, range_vals, X_val, y_val,  X_cal, y_cal, model):
+
+    _, all_scores = get_all_scores(range_vals, X_cal, y_cal, model)
+    scores, _ = get_all_scores(range_vals, X_cal, y_cal, model)
     alpha = args.alpha
     lengths = []
     coverages = []

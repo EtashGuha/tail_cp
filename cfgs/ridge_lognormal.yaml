@@ -1,3 +1,0 @@
-dataset_name: log_normal
-ridge: True
-model_path: ridge_log_normal

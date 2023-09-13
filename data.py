@@ -181,34 +181,47 @@ def get_data(args):
         with open("datasets/lei.pkl", "rb") as f:
             X, y = pickle.load(f)
             
-    scaler = StandardScaler()
-    if name != "lei":
-        X_normalized = scaler.fit_transform(X)
-        y_normalized = scaler.fit_transform(y.reshape(-1, 1)).flatten()  # Reshape y for scaler
-    else:
-        X_normalized = X
-        y_normalized = y
+
         
-    return torch.tensor(X_normalized, dtype=torch.float32), torch.tensor(y_normalized, dtype=torch.float32)
+    return torch.tensor(X, dtype=torch.float32), torch.tensor(y, dtype=torch.float32)
 
 def get_loaders(args):
     name = args.dataset_name
     X_normalized, y_normalized = get_data(args)
     # Split the normalized data and labels into training and validation sets
-    X_train, X_val, y_train, y_val = train_test_split(X_normalized, y_normalized, test_size=args.test_size, random_state=42)
+    X_train, X_val, y_train, y_val = train_test_split(X_normalized, y_normalized, test_size=args.test_size, random_state=)
 
+    n_train = X_train.shape[0]
+    in_shape = X_train.shape[1]
+    idx = np.random.permutation(n_train)
+
+    # divide the data into proper training set and calibration set
+    n_half = int(np.floor(n_train/2))
+    idx_train, idx_cal = idx[:n_half], idx[n_half:2*n_half]
     X_train = torch.tensor(X_train, dtype=torch.float32)
     y_train = torch.tensor(y_train, dtype=torch.float32)
     X_val = torch.tensor(X_val, dtype=torch.float32)
     y_val = torch.tensor(y_val, dtype=torch.float32)
 
+    scalerX = StandardScaler()
+    scalerX = scalerX.fit(X_train[idx_train])
+    X_train = scalerX.transform(X_train)
+    X_test = scalerX.transform(X_test)
+
+    mean_ytrain = np.mean(np.abs(y_train[idx_train]))
+    y_train = np.squeeze(y_train)/mean_ytrain
+    y_val = np.squeeze(y_val)/mean_ytrain
+    
     # Create a DataLoader for training and validation data
-    train_dataset = TensorDataset(X_train, y_train)
+    train_dataset = TensorDataset(X_train[idx_train], y_train[idx_train])
+    cal_dataset = TensorDataset(X_train[idx_cal], y_train[idx_cal])
     val_dataset = TensorDataset(X_val, y_val)
+
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True)
+    cal_loader = DataLoader(cal_dataset, batch_size=args.batch_size, num_workers=args.num_workers)
     val_loader = DataLoader(val_dataset, batch_size=args.batch_size, num_workers=args.num_workers)
 
-    return train_loader, val_loader
+    return train_loader, cal_loader, val_loader
 
 def get_input_and_range(args):
     name = args.dataset_name
@@ -218,12 +231,12 @@ def get_input_and_range(args):
     range_vals = torch.linspace(torch.min(y_train), torch.max(y_train), args.range_size)
     return input_size, range_vals
 
-def get_val_data(args):
-    name = args.dataset_name
-    X_normalized, y_normalized = get_data(args)
-    # Split the normalized data and labels into training and validation sets
-    X_train, X_val, y_train, y_val = train_test_split(X_normalized, y_normalized, test_size=args.test_size, random_state=42)
+def get_val_cal_data(args):
+    
+    train_loader, cal_loader, val_loader = get_loaders(args)
+    X_cal = cal_loader.dataset.tensors[0]
+    y_cal = cal_loader.dataset.tensors[1]
+    X_val = val_loader.dataset.tensors[0]
+    y_val = val_loader.dataset.tensors[1]
 
-    X_val = torch.tensor(X_val, dtype=torch.float32)
-    y_val = torch.tensor(y_val, dtype=torch.float32)
-    return X_val, y_val
+    return X_val, y_val, X_cal, y_cal

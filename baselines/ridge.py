@@ -119,10 +119,12 @@ def set_style():
 
 def conf_pred(args, lambda_, method="lasso"):
     input_size, range_vals = get_input_and_range(args)
-    train_loader, val_loader = get_loaders(args)
+    train_loader, cal_loader, val_loader = get_loaders(args)
 
     X_train = train_loader.dataset.tensors[0].detach().numpy().astype('float16')
     Y_train = train_loader.dataset.tensors[1].unsqueeze(-1).detach().numpy().astype('float16')
+    X_cal = cal_loader.dataset.tensors[0].detach().numpy().astype('float16')
+    y_cal = cal_loader.dataset.tensors[1].unsqueeze(-1).detach().numpy().astype('float16')
     X_val = val_loader.dataset.tensors[0].detach().numpy().astype('float16')
     y_val = val_loader.dataset.tensors[1].unsqueeze(-1).detach().numpy().astype('float16')
 
@@ -140,8 +142,8 @@ def conf_pred(args, lambda_, method="lasso"):
         coef = linex_reg(X_train, Y_train, lambda_)
 
     # Ranking on the test
-    mu = X_val.dot(coef)
-    sorted_residual = np.sort(np.abs(y_val.flatten() - mu.flatten()))
+    mu = X_cal.dot(coef)
+    sorted_residual = np.sort(np.abs(y_cal.flatten() - mu.flatten()))
     index = int((X_val.shape[0]) * (1 - args.alpha))
     quantile = sorted_residual[index]
     

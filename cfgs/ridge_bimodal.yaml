@@ -1,3 +1,0 @@
-dataset_name: bimodal
-ridge: True
-model_path: ridge_bimodal

@@ -25,18 +25,16 @@ def get_model(args):
     if os.path.exists(total_path):
         model.load_state_dict(torch.load(total_path))
     else:
-        
-        train_loader, val_loader = get_loaders(args)
+        train_loader, cal_loader, val_loader = get_loaders(args)
         logger = TensorBoardLogger("tb_logs", name=args.model_path)
         callbacks = get_callbacks(args)
         trainer = pl.Trainer(max_epochs=args.max_epochs, gpus=args.devices, logger=logger, callbacks=callbacks)
         trainer.fit(model, train_loader, val_loader)
         torch.save(model.state_dict(), total_path)
-
     model.eval()
     return model
 
-def seed_everything(seed=42):
+def seed_everything(seed):
     random.seed(seed)
     os.environ['PYTHONHASHSEED'] = str(seed)
     np.random.seed(seed)
@@ -46,9 +44,9 @@ def seed_everything(seed=42):
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
-
 def main(args):
-    X_val, y_val = get_val_data(args)
+    X_val, y_val, X_cal, y_cal = get_val_data(args)
+
     input_size, range_vals = get_input_and_range(args)
     if args.lei:
         mean_coverage, std_coverage, mean_length, std_length = lei(args)
@@ -58,19 +56,21 @@ def main(args):
         log_results((args.dataset_name, args.model_path, mean_coverage, std_coverage, mean_length, std_length))
     elif args.plot_dcp:
         model = get_model(args) 
-        mean_coverage, std_coverage, mean_length, std_length = get_cp(args, range_vals, X_val, y_val, model)
+        mean_coverage, std_coverage, mean_length, std_length = get_cp(args, range_vals, X_val, y_val,  X_cal, y_cal, model)
         plot_path(args, range_vals, X_val, y_val, model)
         plot_prob(args, range_vals, X_val, y_val, model)
-
     else:  
         model = get_model(args) 
-        mean_coverage, std_coverage, mean_length, std_length = get_cp(args, range_vals, X_val, y_val, model)
+        mean_coverage, std_coverage, mean_length, std_length = get_cp(args, range_vals,  X_val, y_val,  X_cal, y_cal, model)
         plot_prob(args, range_vals, X_val, y_val, model)
         log_results((args.dataset_name, args.model_path, mean_coverage, std_coverage, mean_length, std_length))
     return mean_coverage, std_coverage, mean_length, std_length
+
 if __name__ == '__main__':
     torch.set_float32_matmul_precision('medium')
-    args = get_parser_args()
-    seed_everything(args.seed)
-    main(args)
+    for random_state_train_test_id in range(20):
+        args = get_parser_args()
+        setattr(args, "seed", random_state_train_test_id)
+        seed_everything(random_state_train_test_id)
+        main(args)
     

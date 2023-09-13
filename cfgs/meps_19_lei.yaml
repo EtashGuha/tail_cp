@@ -1,4 +1,0 @@
-dataset_name: meps_19
-lei: True
-range_size: 50
-model_path: lei_meps_19
