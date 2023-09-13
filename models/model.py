@@ -53,8 +53,7 @@ class GenModule(pl.LightningModule):
         log_vals[probs == 0] = 0
         neg_entropy = torch.sum(torch.sum(probs * log_vals, dim=1))
         all_losses = [neg_entropy]
-        if torch.isnan(neg_entropy).any():
-            breakpoint()
+
         if self.loss_type == "moment":
             for moment_index in range(self.K):
                 all_losses.append(torch.sum(torch.square(torch.sum(probs * torch.pow(self.range_vals, moment_index + 1), axis=1) - torch.pow(y, moment_index+1))))
@@ -67,6 +66,15 @@ class GenModule(pl.LightningModule):
             indeces = torch.round((y - min(self.range_vals))/step_val)
             all_scores = torch.nn.functional.cross_entropy(pre_probs, indeces.long())
             all_losses.append(all_scores)
+        elif self.loss_type == "cross_entropy_fixed":
+            loss_fn = torch.nn.KLDivLoss()
+            step_val = (max(self.range_vals) - min(self.range_vals))/(len(self.range_vals) - 1)
+            indeces = torch.round((y - min(self.range_vals))/step_val)
+            true_probs = -1 * torch.pow(torch.abs(self.range_vals.view(1, -1).expand(len(y), -1) - y.view(-1, 1)), self.q)
+            true_probs = true_probs/true_probs.sum(dim=1, keepdim=True)
+            loss = loss_fn(torch.nn.functional.log_softmax(pre_probs, dim =1), true_probs)
+            all_losses.append(loss)
+
 
         elif self.loss_type == "cross_entropy_quantile":
             step_val = (max(self.range_vals) - min(self.range_vals))/(len(self.range_vals) - 1)

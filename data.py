@@ -174,10 +174,21 @@ def get_data(args):
         data = Dataset("solar")
         X = data.x
         y = data.y
+    elif name == "hetero":
+        with open("datasets/hetero.pkl", "rb") as f:
+            X, y = pickle.load(f)
+    elif name == "lei":
+        with open("datasets/lei.pkl", "rb") as f:
+            X, y = pickle.load(f)
+            
     scaler = StandardScaler()
-    X_normalized = scaler.fit_transform(X)
-    y_normalized = scaler.fit_transform(y.reshape(-1, 1)).flatten()  # Reshape y for scaler
-
+    if name != "lei":
+        X_normalized = scaler.fit_transform(X)
+        y_normalized = scaler.fit_transform(y.reshape(-1, 1)).flatten()  # Reshape y for scaler
+    else:
+        X_normalized = X
+        y_normalized = y
+        
     return torch.tensor(X_normalized, dtype=torch.float32), torch.tensor(y_normalized, dtype=torch.float32)
 
 def get_loaders(args):
