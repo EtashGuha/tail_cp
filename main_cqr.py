@@ -1,12 +1,12 @@
 import torch
 import matplotlib.pyplot as plt
-from data import get_loaders, get_input_and_range, get_val_data
+from data import get_loaders, get_input_and_range, get_train_val_data
 from create_argparser import get_parser_args
 from pytorch_lightning.loggers import TensorBoardLogger
 import pytorch_lightning as pl
 from models.model import GenModule
 import os
-from sheets import log_results
+# from sheets import log_results
 from cp import get_cp
 from plotter import plot_prob
 from models.callbacks import get_callbacks
@@ -19,9 +19,11 @@ from nonconformist.base import RegressorAdapter
 from nonconformist.nc import QuantileRegErrFunc
 from nonconformist.nc import RegressorNc
 import pickle
+# import logging
 
 torch.autograd.set_detect_anomaly(True)
 def get_model(args):
+    # logging.basicConfig(filename='results.log', encoding='utf-8', level=logging.INFO)
     input_size, range_vals = get_input_and_range(args)
 
     model = GenModule(args, input_size, range_vals)
@@ -47,12 +49,12 @@ if __name__ == '__main__':
     dataset_name = args.dataset_name
     print(f"Dataset: {dataset_name}")
     model = get_model(args) 
-
-
-    X_train, y_train, X_val, y_val = get_val_data(args)
+    X_train, y_train, X_val, y_val = get_train_val_data(args)
     input_size, range_vals = get_input_and_range(args)
     mean_coverage, std_coverage, mean_length, std_length = get_cp(args, range_vals, X_val, y_val, model)
-    print(f"CP Coverage: {mean_coverage} Length: {mean_length}")
+    print(f"Dataset: {dataset_name}")
+    coverage_log = f"CP Coverage: {mean_coverage} Length: {mean_length}"
+    print(coverage_log)
 
     #### CQR stuff
     nn_learn_func = torch.optim.Adam
@@ -113,24 +115,26 @@ if __name__ == '__main__':
                                             random_state=cv_random_state,
                                             use_rearrangement=False)
     nc = RegressorNc(cqr_model, QuantileRegErrFunc())
-    y_lower, y_upper = helper.run_icp(nc, X_train_cqr, y_train_cqr, X_val_cqr, idx_train, idx_cal, significance=0.1)
+    # y_lower, y_upper = helper.run_icp(nc, X_train_cqr, y_train_cqr, X_val_cqr, idx_train, idx_cal, significance=0.1)
     condition=None
     icp = IcpRegressor(nc,condition=condition)
 
     # Fit the ICP using the proper training set
-    icp.fit(X_train_cqr[idx_train,:], y_train_cqr[idx_train])
+    icp.fit(X_train_cqr, y_train_cqr)
 
     # Calibrate the ICP using the calibration set
-    icp.calibrate(X_train_cqr[idx_cal,:], y_train_cqr[idx_cal])
+    icp.calibrate(X_val_cqr, y_val_cqr)
 
     predictions = icp.predict(X_val_cqr, significance=significance)
     cqr_lower = predictions[:,0]
     cqr_upper = predictions[:,1]
-
+    max_y = max(y_train_cqr)
+    min_y = min(y_train_cqr)
+    cqr_lower_clipped = np.array([max(min_y, y) for y in cqr_lower])
+    cqr_upper_clipped = np.array([min(max_y, y) for y in cqr_upper])
     # helper.plot_func_data(y_val_cqr,y_lower,y_upper, f"CQR Net: {dataset_name}")
-    coverage_cp_qnet, length_cp_qnet = helper.compute_coverage(y_val_cqr,cqr_lower,cqr_upper,significance,"CQR Net")
+    coverage_cp_qnet, length_cp_qnet = helper.compute_coverage(y_val_cqr,cqr_lower_clipped,cqr_upper_clipped,significance,"CQR Net")
     print(f"CQR Coverage: {coverage_cp_qnet} Length: {length_cp_qnet}")
-
 
     dataset_name_vec.append(dataset_name)
     method_vec.append('CQR Net')
@@ -146,4 +150,4 @@ if __name__ == '__main__':
     #### End CQR
     plot_prob(args, range_vals, X_val, y_val, model, cqr_lower, cqr_upper)
 
-    log_results((args.dataset_name, args.model_path, mean_coverage, std_coverage, mean_length, std_length))
+    # log_results((args.dataset_name, args.model_path, mean_coverage, std_coverage, mean_length, std_length))
