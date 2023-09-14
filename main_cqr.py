@@ -120,20 +120,20 @@ if __name__ == '__main__':
     icp = IcpRegressor(nc,condition=condition)
 
     # Fit the ICP using the proper training set
-    icp.fit(X_train_cqr, y_train_cqr)
+    icp.fit(X_train_cqr[idx_train,:], y_train_cqr[idx_train])
 
     # Calibrate the ICP using the calibration set
-    icp.calibrate(X_val_cqr, y_val_cqr)
+    icp.calibrate(X_train_cqr[idx_cal,:], y_train_cqr[idx_cal])
 
     predictions = icp.predict(X_val_cqr, significance=significance)
     cqr_lower = predictions[:,0]
     cqr_upper = predictions[:,1]
-    max_y = max(y_train_cqr)
-    min_y = min(y_train_cqr)
-    cqr_lower_clipped = np.array([max(min_y, y) for y in cqr_lower])
-    cqr_upper_clipped = np.array([min(max_y, y) for y in cqr_upper])
+    # max_y = max(y_train_cqr)
+    # min_y = min(y_train_cqr)
+    # cqr_lower_clipped = np.array([max(min_y, y) for y in cqr_lower])
+    # cqr_upper_clipped = np.array([min(max_y, y) for y in cqr_upper])
     # helper.plot_func_data(y_val_cqr,y_lower,y_upper, f"CQR Net: {dataset_name}")
-    coverage_cp_qnet, length_cp_qnet = helper.compute_coverage(y_val_cqr,cqr_lower_clipped,cqr_upper_clipped,significance,"CQR Net")
+    coverage_cp_qnet, length_cp_qnet = helper.compute_coverage(y_val_cqr,cqr_lower,cqr_upper,significance,"CQR Net")
     print(f"CQR Coverage: {coverage_cp_qnet} Length: {length_cp_qnet}")
 
     dataset_name_vec.append(dataset_name)
