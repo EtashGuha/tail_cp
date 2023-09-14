@@ -1,0 +1,4 @@
+dataset_name: community
+ridge: True
+range_size: 50
+model_path: ridge_community

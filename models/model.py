@@ -61,6 +61,10 @@ class GenModule(pl.LightningModule):
             all_losses.append(torch.sum(probs * torch.square(self.range_vals.view(1, -1).expand(len(y), -1) - y.view(-1, 1)))) 
         elif self.loss_type == "thomas_lq":
             all_losses.append(torch.sum(probs * torch.pow(torch.abs(self.range_vals.view(1, -1).expand(len(y), -1) - y.view(-1, 1)), self.q)) )
+        elif self.loss_type == "simplest":
+            step_val = (max(self.range_vals) - min(self.range_vals))/(len(self.range_vals) - 1)
+            indeces = torch.round((y - min(self.range_vals))/step_val)
+            all_losses.append(-torch.sum(torch.log(probs[torch.arange(len(probs)), indeces.long()]))/len(x))
         elif self.loss_type == "cross_entropy":
             step_val = (max(self.range_vals) - min(self.range_vals))/(len(self.range_vals) - 1)
             indeces = torch.round((y - min(self.range_vals))/step_val)
@@ -86,8 +90,11 @@ class GenModule(pl.LightningModule):
             weight_down = 1 - how_much_each_direction
             all_scores = -1 * torch.quantile(probs[torch.arange(len(probs)), indices_up.long()] * weight_up + probs[torch.arange(len(probs)), indices_down.long()] * weight_down, self.alpha)
             all_losses.append(all_scores)
-
-        loss = torch.sum(torch.stack(all_losses) * self.constraint_weights)/len(batch)
+        
+        if self.constraint_weights[0] == 0:
+            loss = torch.sum(torch.stack(all_losses[1:]) * self.constraint_weights[1:])
+        else:
+            loss = torch.sum(torch.stack(all_losses) * self.constraint_weights)
         return loss
     
     def validation_step(self, batch, batch_idx):

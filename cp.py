@@ -1,5 +1,7 @@
 import torch
 import numpy as np
+import pickle 
+import os
 
 def percentile_excluding_index(vector, i, percentile):
         # Remove the value at the i-th index
@@ -59,10 +61,13 @@ def get_all_scores(range_vals, X, y, model):
     weight_up = how_much_each_direction
     weight_down = 1 - how_much_each_direction
 
+    bad_indices = torch.where(torch.logical_or(y > max(range_vals), y < min(range_vals)))
+    indices_up[bad_indices] = 0
+    indices_down[bad_indices] = 0
 
     scores = torch.nn.functional.softmax(model(X), dim=1)
-    all_scores = scores[torch.arange(len(X)), indices_up.long()] * weight_up + scores[torch.arange(len(X_val)), indices_down.long()] * weight_down
-    
+    all_scores = scores[torch.arange(len(X)), indices_up.long()] * weight_up + scores[torch.arange(len(X)), indices_down.long()] * weight_down
+    all_scores[bad_indices] = 0
     return scores, all_scores
 def get_cp(args, range_vals, X_val, y_val,  X_cal, y_cal, model):
 
@@ -76,4 +81,5 @@ def get_cp(args, range_vals, X_val, y_val,  X_cal, y_cal, model):
         coverage, length = calc_length_coverage(scores[i], range_vals, percentile_val, y_val[i])
         coverages.append(coverage)
         lengths.append(length)
+    
     return np.mean(coverages).item(), np.std(coverages).item(), torch.mean(torch.stack(lengths)).item(), torch.std(torch.stack(lengths)).item()

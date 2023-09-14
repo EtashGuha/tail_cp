@@ -1,0 +1,4 @@
+dataset_name: parkinsons
+lei: True
+range_size: 50
+model_path: lei_parkinsons

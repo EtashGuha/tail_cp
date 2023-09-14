@@ -180,16 +180,14 @@ def get_data(args):
     elif name == "lei":
         with open("datasets/lei.pkl", "rb") as f:
             X, y = pickle.load(f)
-            
-
         
-    return torch.tensor(X, dtype=torch.float32), torch.tensor(y, dtype=torch.float32)
+    return X, y
 
 def get_loaders(args):
     name = args.dataset_name
     X_normalized, y_normalized = get_data(args)
     # Split the normalized data and labels into training and validation sets
-    X_train, X_val, y_train, y_val = train_test_split(X_normalized, y_normalized, test_size=args.test_size, random_state=)
+    X_train, X_val, y_train, y_val = train_test_split(X_normalized, y_normalized, test_size=args.test_size, random_state=args.seed)
 
     n_train = X_train.shape[0]
     in_shape = X_train.shape[1]
@@ -198,20 +196,21 @@ def get_loaders(args):
     # divide the data into proper training set and calibration set
     n_half = int(np.floor(n_train/2))
     idx_train, idx_cal = idx[:n_half], idx[n_half:2*n_half]
-    X_train = torch.tensor(X_train, dtype=torch.float32)
-    y_train = torch.tensor(y_train, dtype=torch.float32)
-    X_val = torch.tensor(X_val, dtype=torch.float32)
-    y_val = torch.tensor(y_val, dtype=torch.float32)
 
     scalerX = StandardScaler()
     scalerX = scalerX.fit(X_train[idx_train])
     X_train = scalerX.transform(X_train)
-    X_test = scalerX.transform(X_test)
+    X_val = scalerX.transform(X_val)
 
     mean_ytrain = np.mean(np.abs(y_train[idx_train]))
     y_train = np.squeeze(y_train)/mean_ytrain
     y_val = np.squeeze(y_val)/mean_ytrain
     
+
+    X_train = torch.tensor(X_train, dtype=torch.float32)
+    y_train = torch.tensor(y_train, dtype=torch.float32)
+    X_val = torch.tensor(X_val, dtype=torch.float32)
+    y_val = torch.tensor(y_val, dtype=torch.float32)
     # Create a DataLoader for training and validation data
     train_dataset = TensorDataset(X_train[idx_train], y_train[idx_train])
     cal_dataset = TensorDataset(X_train[idx_cal], y_train[idx_cal])
@@ -226,13 +225,16 @@ def get_loaders(args):
 def get_input_and_range(args):
     name = args.dataset_name
 
-    X_train, y_train = get_data(args)
+    train_loader, cal_loader, val_loader = get_loaders(args)
+    X_train = train_loader.dataset.tensors[0]
+    y_train = train_loader.dataset.tensors[1]
+
     input_size = X_train.shape[1]
     range_vals = torch.linspace(torch.min(y_train), torch.max(y_train), args.range_size)
     return input_size, range_vals
 
 def get_val_cal_data(args):
-    
+
     train_loader, cal_loader, val_loader = get_loaders(args)
     X_cal = cal_loader.dataset.tensors[0]
     y_cal = cal_loader.dataset.tensors[1]
@@ -240,3 +242,4 @@ def get_val_cal_data(args):
     y_val = val_loader.dataset.tensors[1]
 
     return X_val, y_val, X_cal, y_cal
+

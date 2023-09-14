@@ -3,13 +3,14 @@ from sklearn.model_selection import train_test_split
 from interval import interval as intervals
 from sklearn.linear_model import lasso_path
 from data import get_input_and_range, get_loaders
-random_state = 42
 
 import numpy as np
 from scipy.optimize import minimize
 from sklearn.model_selection import KFold
 from sklearn.linear_model import lasso_path
 import seaborn as sns
+import os
+import pickle
 
 
 def logcosh(coef, X, y, lambda_):
@@ -69,7 +70,7 @@ def cross_val(X, y, method="lasso"):
     lambda_max = np.linalg.norm(X.T.dot(y))
     lambdas = lambda_max * np.logspace(0, -2, n_lambdas)
 
-    KF = KFold(n_splits=5, shuffle=True, random_state=42)
+    KF = KFold(n_splits=5, shuffle=True)
     n_folds = KF.get_n_splits()
     errors = np.zeros((n_lambdas, n_folds))
     i_fold = 0
@@ -156,4 +157,8 @@ def conf_pred(args, lambda_, method="lasso"):
         else:  
             coverages.append(0)
         lengths.append(2 * quantile)
+    if not os.path.exists("saved_results/{}".format(args.dataset_name)):
+        os.mkdir("saved_results/{}".format(args.dataset_name))
+    with open("saved_results/{}/ridge.pkl".format(args.dataset_name), "wb") as f:
+        pickle.dump((coverages, lengths), f)
     return np.mean(coverages), np.std(coverages), np.mean(lengths), np.std(lengths)

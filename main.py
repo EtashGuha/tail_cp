@@ -1,6 +1,6 @@
 import torch
 import matplotlib.pyplot as plt
-from data import get_loaders, get_input_and_range, get_val_data
+from data import get_loaders, get_input_and_range, get_val_cal_data
 from create_argparser import get_parser_args
 from pytorch_lightning.loggers import TensorBoardLogger
 import pytorch_lightning as pl
@@ -45,7 +45,7 @@ def seed_everything(seed):
     torch.backends.cudnn.benchmark = False
 
 def main(args):
-    X_val, y_val, X_cal, y_cal = get_val_data(args)
+    X_val, y_val, X_cal, y_cal = get_val_cal_data(args)
 
     input_size, range_vals = get_input_and_range(args)
     if args.lei:
@@ -68,7 +68,7 @@ def main(args):
 
 if __name__ == '__main__':
     torch.set_float32_matmul_precision('medium')
-    for random_state_train_test_id in range(20):
+    for random_state_train_test_id in range(1):
         args = get_parser_args()
         setattr(args, "seed", random_state_train_test_id)
         seed_everything(random_state_train_test_id)

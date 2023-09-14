@@ -4,6 +4,7 @@ from cp import percentile_excluding_index
 import torch
 from cp import calc_length_coverage, find_intervals_above_value_with_interpolation
 import seaborn as sns
+import pickle
 import numpy as np
 def find_rank(value, value_list):
     sorted_list = sorted(value_list)
@@ -69,7 +70,7 @@ def plot_prob(args, range_vals, X_val, y_val, model):
     if not os.path.exists("images/{}_pi".format(args.model_path)):
         os.mkdir("images/{}_pi".format(args.model_path))
         
-        
+
     step_val = (max(range_vals) - min(range_vals))/len(range_vals)
     indices = (((y_val - min(range_vals)))/step_val).to(torch.int)
     indices[indices == len(range_vals)] = indices[indices == len(range_vals)] - 1
@@ -105,5 +106,45 @@ def plot_prob(args, range_vals, X_val, y_val, model):
         plt.xlabel(r'$z$')
         plt.ylabel(r'$\pi(z)$')
         plt.savefig("images/{}_pi/{}.png".format(args.model_path, i))
+
+def plot_violin(args, coverages, lengths):
+    
+    with open("saved_results/{}/lei.pkl".format(args.dataset_name), "rb") as f:
+        lei_coverages, lei_lengths = pickle.load(f)
+    
+    with open("saved_results/{}/ridge.pkl".format(args.dataset_name), "rb") as f:
+        ridge_coverages, ridge_lengths = pickle.load(f)
+    
+    all_coverages = [coverages, lei_coverages, ridge_coverages]
+    all_lengths = [lengths, lei_lengths, ridge_lengths]
+    labels = ["Ours", "Lei", "Ridge" ]
+
+    plt.clf()
+    sns.set(style="whitegrid")  # Optional styling
+    plt.figure(figsize=(8, 6))  # Optional figure size
+
+    # Use the violinplot function to create the plot
+    sns.violinplot(data=all_coverages, inner="box", palette="Set3")
+
+    # Set labels and title
+    plt.xticks(range(len(labels)), labels)
+    plt.xlabel('Coverages')
+    plt.ylabel('Values')
+    plt.legend()
+    plt.savefig("images/{}/violin_coverage.png".format(args.model_path))
+
+    plt.clf()
+    sns.set(style="whitegrid")  # Optional styling
+    plt.figure(figsize=(8, 6))  # Optional figure size
+
+    # Use the violinplot function to create the plot
+    sns.violinplot(data=all_lengths, inner="box", palette="Set3")
+
+    # Set labels and title
+    plt.xticks(range(len(labels)), labels)
+    plt.xlabel('Lengths')
+    plt.ylabel('Values')
+    plt.legend()
+    plt.savefig("images/{}/violin_length.png".format(args.model_path))
 
 

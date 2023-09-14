@@ -1,0 +1,4 @@
+dataset_name: diabetes
+lei: True
+range_size: 50
+model_path: lei_diabetes
