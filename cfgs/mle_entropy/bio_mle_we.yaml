@@ -1,7 +1,7 @@
 model: mlp
-model_path: concrete_1
-dataset_name: concrete
-loss_type: thomas_lq
+model_path: bio_mle_we
+dataset_name: bio
+loss_type: simplest
 range_size: 50
 batch_size: 32
 devices: 1
@@ -9,7 +9,7 @@ lr: 1e-4
 ffn_activation: relu
 ffn_hidden_dim: 1000
 ffn_num_layers: 4
-constraint_weights: 0, 1
+constraint_weights: 1, 1
 max_epochs: 3000
 lq_norm_val: .5
 weight_decay: 1e-4

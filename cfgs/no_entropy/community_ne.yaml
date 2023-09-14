@@ -1,6 +1,6 @@
 model: mlp
-model_path: blog_1
-dataset_name: blog
+model_path: community_ne
+dataset_name: community
 loss_type: thomas_lq
 range_size: 50
 batch_size: 32

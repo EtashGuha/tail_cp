@@ -68,7 +68,7 @@ def plot_prob(args, range_vals, X_val, y_val, model):
     if not os.path.exists("images/{}/wrong".format(args.model_path)):
         os.mkdir("images/{}/wrong".format(args.model_path))
     if not os.path.exists("images/{}_pi".format(args.model_path)):
-        os.mkdir("images/{}_pi".format(args.model_path))
+        os.mkdir("images/{}/pi".format(args.model_path))
         
 
     step_val = (max(range_vals) - min(range_vals))/len(range_vals)
@@ -105,7 +105,7 @@ def plot_prob(args, range_vals, X_val, y_val, model):
         plt.plot(range_vals.detach().numpy(), list_of_ranks)
         plt.xlabel(r'$z$')
         plt.ylabel(r'$\pi(z)$')
-        plt.savefig("images/{}_pi/{}.png".format(args.model_path, i))
+        plt.savefig("images/{}/pi/{}.png".format(args.model_path, i))
 
 def plot_violin(args, coverages, lengths):
     
@@ -116,7 +116,7 @@ def plot_violin(args, coverages, lengths):
         ridge_coverages, ridge_lengths = pickle.load(f)
     
     all_coverages = [coverages, lei_coverages, ridge_coverages]
-    all_lengths = [lengths, lei_lengths, ridge_lengths]
+    all_lengths = [torch.stack(lengths).detach().numpy(), torch.stack(lei_lengths).detach().numpy(), ridge_lengths]
     labels = ["Ours", "Lei", "Ridge" ]
 
     plt.clf()

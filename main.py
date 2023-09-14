@@ -7,8 +7,8 @@ import pytorch_lightning as pl
 from models.model import GenModule
 import os
 from sheets import log_results
-from cp import get_cp
-from plotter import plot_prob, plot_path
+from cp import get_cp, get_cp_lists
+from plotter import plot_prob, plot_path, plot_violin
 from models.callbacks import get_callbacks
 from baselines.lei import lei
 from baselines.ridge import conf_pred
@@ -61,9 +61,12 @@ def main(args):
         plot_prob(args, range_vals, X_val, y_val, model)
     else:  
         model = get_model(args) 
+        coverages, lengths = get_cp_lists(args, range_vals, X_val, y_val,  X_cal, y_cal, model)
+        plot_violin(args, coverages, lengths)
         mean_coverage, std_coverage, mean_length, std_length = get_cp(args, range_vals,  X_val, y_val,  X_cal, y_cal, model)
         plot_prob(args, range_vals, X_val, y_val, model)
         log_results((args.dataset_name, args.model_path, mean_coverage, std_coverage, mean_length, std_length))
+        
     return mean_coverage, std_coverage, mean_length, std_length
 
 if __name__ == '__main__':

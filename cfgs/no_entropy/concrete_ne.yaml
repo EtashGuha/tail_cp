@@ -1,6 +1,6 @@
 model: mlp
-model_path: bio_1
-dataset_name: bio
+model_path: concrete_ne
+dataset_name: concrete
 loss_type: thomas_lq
 range_size: 50
 batch_size: 32

@@ -1,6 +1,6 @@
 model: mlp
-model_path: bimodal_ori
-dataset_name: bimodal
+model_path: blog_ori
+dataset_name: blog
 loss_type: thomas_lq
 range_size: 50
 batch_size: 32

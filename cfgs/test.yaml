@@ -1,16 +1,16 @@
 model: mlp
-model_path: bimodal_ori
-dataset_name: bimodal
+model_path: test
+dataset_name: parkinsons
 loss_type: thomas_lq
 range_size: 50
 batch_size: 32
 devices: 1
-lr: 1e-4
+lr: 1e-6
 ffn_activation: relu
 ffn_hidden_dim: 1000
 ffn_num_layers: 4
-constraint_weights: 1, 5
-max_epochs: 3000
+constraint_weights: .5, 5
+max_epochs: 10
 lq_norm_val: .5
-weight_decay: 1e-4
+weight_decay: 1
 optimizer: adamw
