@@ -22,12 +22,12 @@ def plot(args, i, all_label_scores, range_vals, cutoff):
     plt.plot([np.min(np.asarray(range_vals)), np.max(np.asarray(range_vals))], [cutoff, cutoff], label=r'Confidence Level $\alpha$')
     plt.savefig("images/{}/lei/{}.png".format(args.dataset_name, i))
 
-def get_cal_data(X_train, y_train, X_cal, y_cal):
+def get_cal_data(X_train, y_train, X_val, y_val):
     h=.1
     cal_scores = []
-    for i in tqdm(range(len(X_cal))):
-        diff_Xi = np.exp(-1 * np.sum(np.square(X_cal[i] - X_train), axis=1)/(h*h))
-        diff_yi = np.exp(-1 * np.square(y_cal[i].item() - y_train)/(h*h))
+    for i in tqdm(range(len(X_val))):
+        diff_Xi = np.exp(-1 * np.sum(np.square(X_val[i] - X_train), axis=1)/(h*h))
+        diff_yi = np.exp(-1 * np.square(y_val[i].item() - y_train)/(h*h))
         cal_scores.append((np.sum(diff_Xi) + 1) * (np.sum(diff_yi) + 1))
     return cal_scores
 
@@ -50,17 +50,15 @@ def get_cov_len_fast(i, args, range_vals, cal_scores, X_train, y_train, X_val, y
 
 def lei(args):
     input_size, range_vals = get_input_and_range(args)
-    train_loader, cal_loader, val_loader = get_loaders(args)
+    train_loader, val_loader = get_loaders(args)
 
     X_train = train_loader.dataset.tensors[0].detach().numpy().astype('float16')
     y_train = train_loader.dataset.tensors[1].unsqueeze(-1).detach().numpy().astype('float16')
-    X_cal = cal_loader.dataset.tensors[0].detach().numpy().astype('float16')
-    y_cal = cal_loader.dataset.tensors[1].unsqueeze(-1).detach().numpy().astype('float16')
     X_val = val_loader.dataset.tensors[0].detach().numpy().astype('float16')
     y_val = val_loader.dataset.tensors[1].unsqueeze(-1).detach().numpy().astype('float16')
 
     h = .1
-    cal_scores = get_cal_data(X_train, y_train, X_cal, y_cal)
+    cal_scores = get_cal_data(X_train, y_train, X_val, y_val)
     real_get_cov_len_fast = partial(get_cov_len_fast, args=args,range_vals =range_vals,cal_scores=cal_scores, X_train=X_train, y_train=y_train, X_val=X_val, y_val=y_val)
 
     lengths = []

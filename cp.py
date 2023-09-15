@@ -68,10 +68,9 @@ def get_all_scores(range_vals, X, y, model):
     all_scores = scores[torch.arange(len(X)), indices_up.long()] * weight_up + scores[torch.arange(len(X)), indices_down.long()] * weight_down
     all_scores[bad_indices] = 0
     return scores, all_scores
-def get_cp_lists(args, range_vals, X_val, y_val,  X_cal, y_cal, model):
+def get_cp_lists(args, range_vals, X_val, y_val, model):
 
-    _, all_scores = get_all_scores(range_vals, X_cal, y_cal, model)
-    scores, _ = get_all_scores(range_vals, X_val, y_val, model)
+    scores, all_scores = get_all_scores(range_vals, X_val, y_val, model)
     
     alpha = args.alpha
     lengths = []
@@ -84,6 +83,6 @@ def get_cp_lists(args, range_vals, X_val, y_val,  X_cal, y_cal, model):
 
     return coverages, lengths
 
-def get_cp(args, range_vals, X_val, y_val,  X_cal, y_cal, model):
-    coverages, lengths = get_cp_lists(args, range_vals, X_val, y_val,  X_cal, y_cal, model)
+def get_cp(args, range_vals, X_val, y_val, model):
+    coverages, lengths = get_cp_lists(args, range_vals, X_val, y_val, model)
     return np.mean(coverages).item(), np.std(coverages).item(), torch.mean(torch.stack(lengths)).item(), torch.std(torch.stack(lengths)).item()

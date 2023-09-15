@@ -35,14 +35,13 @@ def set_style():
         "font.serif": ["Times", "Palatino", "serif"]
     })
 
-def plot_path(args, range_vals, X_val, y_val, X_cal, y_cal, model):
+def plot_path(args, range_vals, X_val, y_val, model):
     set_style()
     plt.rcParams["mathtext.fontset"] = "cm"
     if not os.path.exists("images/{}".format(args.model_path)):
         os.mkdir("images/{}".format(args.model_path))
     
-    _, all_scores = get_all_scores(range_vals, X_cal, y_cal, model)
-    scores, _ = get_all_scores(range_vals, X_val, y_val, model)
+    scores, all_scores = get_all_scores(range_vals, X_val, y_val, model)
 
     alpha = args.alpha
 
@@ -56,7 +55,7 @@ def plot_path(args, range_vals, X_val, y_val, X_cal, y_cal, model):
     plt.savefig("images/{}/dcp.png".format(args.model_path))
 
         
-def plot_prob(args, range_vals, X_val, y_val, X_cal, y_cal, model):
+def plot_prob(args, range_vals, X_val, y_val, model):
     set_style()
     plt.rcParams["mathtext.fontset"] = "cm"
     if not os.path.exists("images/{}".format(args.model_path)):
@@ -69,8 +68,7 @@ def plot_prob(args, range_vals, X_val, y_val, X_cal, y_cal, model):
         os.mkdir("images/{}/pi".format(args.model_path))
         
 
-    _, all_scores = get_all_scores(range_vals, X_cal, y_cal, model)
-    scores, _ = get_all_scores(range_vals, X_val, y_val, model)
+    scores, all_scores = get_all_scores(range_vals, X_val, y_val, model)
 
 
     alpha = args.alpha
