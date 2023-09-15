@@ -191,10 +191,6 @@ def get_data(args):
             X, y = pickle.load(f)
     return X, y        
 
-
-
-
-
 def get_loaders(args):
     name = args.dataset_name
     X_normalized, y_normalized = get_data(args)
