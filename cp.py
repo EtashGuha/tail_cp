@@ -17,7 +17,7 @@ def find_intervals_above_value_with_interpolation(x_values, y_values, cutoff):
         x1, x2 = x_values[i], x_values[i + 1]
         y1, y2 = y_values[i], y_values[i + 1]
 
-        if min(y1, y2) <= cutoff <= max(y1, y2):
+        if min(y1, y2) <= cutoff < max(y1, y2):
             # Calculate the x-coordinate where the line crosses the cutoff value
             x_cross = x1 + (x2 - x1) * (cutoff - y1) / (y2 - y1)
 
@@ -65,7 +65,7 @@ def get_all_scores(range_vals, X, y, model):
     all_scores = scores[torch.arange(len(X)), indices_up.long()] * weight_up + scores[torch.arange(len(X)), indices_down.long()] * weight_down
     all_scores[bad_indices] = 0
     return scores, all_scores
-    
+
 def get_cp_lists(args, range_vals, X_val, y_val, model):
 
     scores, all_scores = get_all_scores(range_vals, X_val, y_val, model)

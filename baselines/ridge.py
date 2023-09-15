@@ -120,7 +120,7 @@ def set_style():
 
 def conf_pred(args, lambda_, method="lasso"):
     input_size, range_vals = get_input_and_range(args)
-    train_loader, cal_loader, val_loader = get_loaders(args)
+    train_loader, val_loader = get_loaders(args)
 
     X_train = train_loader.dataset.tensors[0].detach().numpy().astype('float16')
     Y_train = train_loader.dataset.tensors[1].unsqueeze(-1).detach().numpy().astype('float16')
