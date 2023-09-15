@@ -1,9 +1,9 @@
 model: resnet
 model_path: cv_1
-dataset_name: age
+dataset_name: cuteness
 loss_type: thomas_lq
 range_size: 50
-batch_size: 16
+batch_size: 256
 devices: 1
 lr: 1e-4
 constraint_weights: 1, 5

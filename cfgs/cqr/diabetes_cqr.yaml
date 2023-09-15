@@ -1,0 +1,3 @@
+cqr: true
+dataset_name: diabetes
+model_path: diabetes_cqr

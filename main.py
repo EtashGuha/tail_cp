@@ -50,7 +50,7 @@ def main(args):
 
     input_size, range_vals = get_input_and_range(args)
     if args.cqr:
-        mean_coverage, std_coverage, mean_length, std_length = run_cqr(X_train, y_train, X_val, y_val)
+        mean_coverage, std_coverage, mean_length, std_length = run_cqr(args)
         log_results((args.dataset_name, args.model_path, mean_coverage, std_coverage, mean_length, std_length))
     if args.lei:
         mean_coverage, std_coverage, mean_length, std_length = lei(args)

@@ -1,0 +1,3 @@
+cqr: true
+dataset_name: log_normal
+model_path: log_normal_cqr

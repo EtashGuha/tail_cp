@@ -52,14 +52,14 @@ def main(args):
     torch.set_float32_matmul_precision('medium')
     dataset_name = args.dataset_name
     print(f"Dataset: {dataset_name}")
-    model = get_model(args) 
+    # # model = get_model(args) 
     X_train, y_train, X_val, y_val = get_train_val_data(args)
-    input_size, range_vals = get_input_and_range(args)
-    mean_coverage, std_coverage, mean_length, std_length = get_cp(args, range_vals, X_val, y_val,model)
-    print(f"Dataset: {dataset_name}")
-    coverage_log = f"CP Coverage: {mean_coverage} +- {std_coverage} Length: {mean_length} +- {std_length}"
-    print(coverage_log)
-    cqr_avg_coverage, cqr_std_coverage, cqr_avg_length, cqr_std_length, cqr_lower, cqr_upper = run_cqr(X_train, y_train, X_val, y_val)
+    # input_size, range_vals = get_input_and_range(args)
+    # mean_coverage, std_coverage, mean_length, std_length = get_cp(args, range_vals, X_val, y_val,model)
+    # print(f"Dataset: {dataset_name}")
+    # coverage_log = f"CP Coverage: {mean_coverage} +- {std_coverage} Length: {mean_length} +- {std_length}"
+    # print(coverage_log)
+    cqr_avg_coverage, cqr_std_coverage, cqr_avg_length, cqr_std_length, cqr_lower, cqr_upper = run_cqr(args)
     # plot_prob(args, range_vals, X_val, y_val, model, cqr_lower, cqr_upper)
     
 

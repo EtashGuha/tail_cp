@@ -3,12 +3,24 @@ import torch
 import random
 import numpy as np
 import cqr_helpers.helper as helper
+from data import get_loaders, get_input_and_range
 from cqr_helpers.nonconformist.cp import IcpRegressor
 from cqr_helpers.nonconformist.base import RegressorAdapter
 from cqr_helpers.nonconformist.nc import QuantileRegErrFunc
 from cqr_helpers.nonconformist.nc import RegressorNc
+import os
+import pickle
 
-def run_cqr(X_train, y_train, X_val, y_val):
+def run_cqr(args):
+    input_size, range_vals = get_input_and_range(args)
+    train_loader, val_loader = get_loaders(args)
+
+    X_train = train_loader.dataset.tensors[0].detach().numpy()
+    y_train = train_loader.dataset.tensors[1].unsqueeze(-1).detach().numpy()
+    X_val = val_loader.dataset.tensors[0].detach().numpy()
+    y_val = val_loader.dataset.tensors[1].unsqueeze(-1).detach().numpy()
+
+
     nn_learn_func = torch.optim.Adam
     epochs = 1000
     lr = 0.0005
@@ -51,12 +63,11 @@ def run_cqr(X_train, y_train, X_val, y_val):
     condition=None
     icp = IcpRegressor(nc,condition=condition)
 
-
     # Fit the ICP using the proper training set
-    icp.fit(X_train_cqr, y_train_cqr)
+    icp.fit(X_train_cqr, y_train_cqr.squeeze())
 
     # Calibrate the ICP using the calibration set
-    icp.calibrate(X_val_cqr, y_val_cqr)
+    icp.calibrate(X_val_cqr, y_val_cqr.squeeze())
 
     predictions = icp.predict(X_val_cqr, significance=significance)
     cqr_lower = predictions[:,0]
@@ -68,6 +79,11 @@ def run_cqr(X_train, y_train, X_val, y_val):
     cqr_lower_clipped = np.array([max(min_y, y) for y in cqr_lower])
     cqr_upper_clipped = np.array([min(max_y, y) for y in cqr_upper])
 
+    coverages, lengths = helper.compute_coverage_len_lists(y_val_cqr,cqr_lower_clipped,cqr_upper_clipped)
+    if not os.path.exists("saved_results/{}".format(args.dataset_name)):
+        os.mkdir("saved_results/{}".format(args.dataset_name))
+    with open("saved_results/{}/cqr.pkl".format(args.dataset_name), "wb") as f:
+        pickle.dump((coverages, lengths), f)
     avg_coverage, std_coverage, avg_length, std_length = helper.compute_coverage(y_val_cqr,cqr_lower_clipped,cqr_upper_clipped,significance,"CQR Net")
     print(f"CQR Coverage: {avg_coverage} +- {std_coverage} Length: {avg_length} +- {std_length}")
-    return avg_coverage, std_coverage, avg_length, std_length, cqr_upper_clipped, cqr_lower_clipped
+    return avg_coverage, std_coverage, avg_length, std_length

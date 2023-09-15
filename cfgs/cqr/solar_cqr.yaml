@@ -1,0 +1,3 @@
+cqr: true
+dataset_name: solar
+model_path: solar_cqr

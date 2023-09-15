@@ -36,6 +36,28 @@ def compute_coverage_len(y_test, y_lower, y_upper):
     avg_length = np.mean(abs(y_upper - y_lower))
     return coverage, avg_length
 
+def compute_coverage_len_lists(y_test, y_lower, y_upper):
+    """ Compute average coverage and length of prediction intervals
+
+    Parameters
+    ----------
+
+    y_test : numpy array, true labels (n)
+    y_lower : numpy array, estimated lower bound for the labels (n)
+    y_upper : numpy array, estimated upper bound for the labels (n)
+
+    Returns
+    -------
+
+    coverage : float, average coverage
+    avg_length : float, average length
+
+    """
+    y_test = np.asarray(y_test)
+    coverages = list((y_test >= y_lower) & (y_test <= y_upper))
+    lengths = list(abs(y_upper - y_lower))
+    return coverages, lengths
+
 def run_icp(nc, X_train, y_train, X_cal, y_cal, X_test, idx_train, idx_cal, significance, condition=None):
     """ Run split conformal method
 
