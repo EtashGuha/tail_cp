@@ -1,6 +1,6 @@
 import torch
 import matplotlib.pyplot as plt
-from data import get_loaders, get_input_and_range, get_val_cal_data
+from data import get_loaders, get_input_and_range, get_train_val_data
 from create_argparser import get_parser_args
 from pytorch_lightning.loggers import TensorBoardLogger
 import pytorch_lightning as pl
@@ -25,7 +25,7 @@ def get_model(args):
     if os.path.exists(total_path):
         model.load_state_dict(torch.load(total_path))
     else:
-        train_loader, cal_loader, val_loader = get_loaders(args)
+        train_loader, val_loader = get_loaders(args)
         logger = TensorBoardLogger("tb_logs", name=args.model_path)
         callbacks = get_callbacks(args)
         trainer = pl.Trainer(max_epochs=args.max_epochs, gpus=args.devices, logger=logger, callbacks=callbacks)
@@ -45,7 +45,7 @@ def seed_everything(seed):
     torch.backends.cudnn.benchmark = False
 
 def main(args):
-    X_val, y_val, X_cal, y_cal = get_val_cal_data(args)
+    X_train, y_train, X_val, y_val = get_train_val_data(args)
 
     input_size, range_vals = get_input_and_range(args)
     if args.lei:
@@ -57,13 +57,13 @@ def main(args):
     elif args.plot_dcp:
         model = get_model(args) 
         mean_coverage, std_coverage, mean_length, std_length = get_cp(args, range_vals, X_val, y_val,  X_cal, y_cal, model)
-        plot_path(args, range_vals, X_val, y_val,X_cal, y_cal, model)
-        plot_prob(args, range_vals, X_val, y_val, X_cal, y_cal, model)
+        plot_path(args, range_vals, X_val, y_val, model)
+        plot_prob(args, range_vals, X_val, y_val, model)
     else:  
         model = get_model(args) 
-        coverages, lengths = get_cp_lists(args, range_vals, X_val, y_val,  X_cal, y_cal, model)
-        mean_coverage, std_coverage, mean_length, std_length = get_cp(args, range_vals,  X_val, y_val,  X_cal, y_cal, model)
-        plot_prob(args, range_vals, X_val, y_val,X_cal, y_cal, model)
+        coverages, lengths = get_cp_lists(args, range_vals, X_val, y_val, model)
+        mean_coverage, std_coverage, mean_length, std_length = get_cp(args, range_vals,  X_val, y_val, model)
+        plot_prob(args, range_vals, X_val, y_val, model)
         log_results((args.dataset_name, args.model_path, mean_coverage, std_coverage, mean_length, std_length))
         plot_violin(args, coverages, lengths)
         
