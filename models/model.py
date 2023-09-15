@@ -3,6 +3,7 @@ import pytorch_lightning as pl
 from torch import optim
 from models.transformer import Transformer
 from models.mlp import MLPModel
+import torchvision.models as tnmodels
 from pl_bolts.optimizers.lr_scheduler import LinearWarmupCosineAnnealingLR
 from torch.optim.lr_scheduler import CosineAnnealingLR, LinearLR, MultiStepLR
 
@@ -13,10 +14,16 @@ class GenModule(pl.LightningModule):
 
         if args.model == "mlp":
             model_class = MLPModel
+            self.model = model_class(args, input_size, len(range_vals))
         elif args.model == "transformer":
             model_class = Transformer
+            self.model = model_class(args, input_size, len(range_vals))
+        elif args.model == "resnet":
+            self.model = tnmodels.resnet18(pretrained=True)
+            self.model.fc = torch.nn.Linear(self.model.fc.in_features,len(range_vals))
+
         self.loss_type = args.loss_type
-        self.model = model_class(args, input_size, len(range_vals))
+        
         self.smax = torch.nn.Softmax(dim=1)
         self.register_buffer("range_vals",range_vals)
         self.annealing = args.annealing

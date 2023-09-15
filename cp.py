@@ -3,12 +3,11 @@ import numpy as np
 import pickle 
 import os
 
-def percentile_excluding_index(vector, i, percentile):
+def percentile_excluding_index(vector, percentile):
         # Remove the value at the i-th index
-        modified_vector = torch.cat((vector[:i], vector[i+1:]))
 
         # Calculate the percentile on the modified vector
-        percentile_value = torch.quantile(modified_vector, percentile)
+        percentile_value = torch.quantile(vector, percentile)
         
         return percentile_value
 
@@ -69,17 +68,22 @@ def get_all_scores(range_vals, X, y, model):
     all_scores = scores[torch.arange(len(X)), indices_up.long()] * weight_up + scores[torch.arange(len(X)), indices_down.long()] * weight_down
     all_scores[bad_indices] = 0
     return scores, all_scores
-def get_cp(args, range_vals, X_val, y_val,  X_cal, y_cal, model):
+def get_cp_lists(args, range_vals, X_val, y_val,  X_cal, y_cal, model):
 
     _, all_scores = get_all_scores(range_vals, X_cal, y_cal, model)
-    scores, _ = get_all_scores(range_vals, X_cal, y_cal, model)
+    scores, _ = get_all_scores(range_vals, X_val, y_val, model)
+    
     alpha = args.alpha
     lengths = []
     coverages = []
     for i in range(len(X_val)):
-        percentile_val = percentile_excluding_index(all_scores, i, alpha)
+        percentile_val = percentile_excluding_index(all_scores, alpha)
         coverage, length = calc_length_coverage(scores[i], range_vals, percentile_val, y_val[i])
         coverages.append(coverage)
         lengths.append(length)
-    
+
+    return coverages, lengths
+
+def get_cp(args, range_vals, X_val, y_val,  X_cal, y_cal, model):
+    coverages, lengths = get_cp_lists(args, range_vals, X_val, y_val,  X_cal, y_cal, model)
     return np.mean(coverages).item(), np.std(coverages).item(), torch.mean(torch.stack(lengths)).item(), torch.std(torch.stack(lengths)).item()

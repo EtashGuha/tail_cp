@@ -57,15 +57,15 @@ def main(args):
     elif args.plot_dcp:
         model = get_model(args) 
         mean_coverage, std_coverage, mean_length, std_length = get_cp(args, range_vals, X_val, y_val,  X_cal, y_cal, model)
-        plot_path(args, range_vals, X_val, y_val, model)
-        plot_prob(args, range_vals, X_val, y_val, model)
+        plot_path(args, range_vals, X_val, y_val,X_cal, y_cal, model)
+        plot_prob(args, range_vals, X_val, y_val, X_cal, y_cal, model)
     else:  
         model = get_model(args) 
         coverages, lengths = get_cp_lists(args, range_vals, X_val, y_val,  X_cal, y_cal, model)
-        plot_violin(args, coverages, lengths)
         mean_coverage, std_coverage, mean_length, std_length = get_cp(args, range_vals,  X_val, y_val,  X_cal, y_cal, model)
-        plot_prob(args, range_vals, X_val, y_val, model)
+        plot_prob(args, range_vals, X_val, y_val,X_cal, y_cal, model)
         log_results((args.dataset_name, args.model_path, mean_coverage, std_coverage, mean_length, std_length))
+        plot_violin(args, coverages, lengths)
         
     return mean_coverage, std_coverage, mean_length, std_length
 

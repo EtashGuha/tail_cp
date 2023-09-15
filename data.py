@@ -6,8 +6,14 @@ from sklearn.model_selection import train_test_split
 import pandas as pd
 import pickle
 import numpy as np
+from torchvision import models
 from sklearn.impute import SimpleImputer
 from uci_datasets import Dataset
+from tqdm import tqdm
+import torchvision.transforms as transforms
+import cv2
+import os
+from PIL import Image
 
 def get_data(args):
     name = args.dataset_name
@@ -180,8 +186,36 @@ def get_data(args):
     elif name == "lei":
         with open("datasets/lei.pkl", "rb") as f:
             X, y = pickle.load(f)
-        
-    return X, y
+    elif name == "age":
+        transform = transforms.Compose(
+                [
+                    transforms.RandomResizedCrop(224),
+                    transforms.RandomHorizontalFlip(),
+                    transforms.ToTensor(),
+                    transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                 std=[0.229, 0.224, 0.225])
+                ])
+        image_folder = 'datasets/archive/images/utkdata'
+        images = []
+        ages = []
+        for filename in tqdm(os.listdir(image_folder)):
+            if filename.endswith('.jpg'):
+                # Parse age from the filename
+                age = int(filename.split('_')[0])
+
+                # Read and preprocess the image
+
+                image_path = os.path.join(image_folder, filename)
+                img = Image.open(image_path)
+                images.append(transform(img))
+                ages.append(age)
+        X = torch.stack(images).detach().numpy()
+        y = np.array(ages)
+
+        with open("datasets/age.pkl", "wb") as f:
+            pickle.dump((X, y), f)
+        breakpoint()
+    return X, y        
 
 def get_loaders(args):
     name = args.dataset_name
@@ -196,12 +230,12 @@ def get_loaders(args):
     # divide the data into proper training set and calibration set
     n_half = int(np.floor(n_train/2))
     idx_train, idx_cal = idx[:n_half], idx[n_half:2*n_half]
-
-    scalerX = StandardScaler()
-    scalerX = scalerX.fit(X_train[idx_train])
-    X_train = scalerX.transform(X_train)
-    X_val = scalerX.transform(X_val)
-
+    if args.model != "resnet":
+        scalerX = StandardScaler()
+        scalerX = scalerX.fit(X_train[idx_train])
+        X_train = scalerX.transform(X_train)
+        X_val = scalerX.transform(X_val)
+    
     mean_ytrain = np.mean(np.abs(y_train[idx_train]))
     y_train = np.squeeze(y_train)/mean_ytrain
     y_val = np.squeeze(y_val)/mean_ytrain

@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import os
 from cp import percentile_excluding_index
 import torch
-from cp import calc_length_coverage, find_intervals_above_value_with_interpolation
+from cp import calc_length_coverage, find_intervals_above_value_with_interpolation, get_all_scores
 import seaborn as sns
 import pickle
 import numpy as np
@@ -35,22 +35,20 @@ def set_style():
         "font.serif": ["Times", "Palatino", "serif"]
     })
 
-def plot_path(args, range_vals, X_val, y_val, model):
+def plot_path(args, range_vals, X_val, y_val, X_cal, y_cal, model):
     set_style()
     plt.rcParams["mathtext.fontset"] = "cm"
     if not os.path.exists("images/{}".format(args.model_path)):
         os.mkdir("images/{}".format(args.model_path))
     
-    step_val = (max(range_vals) - min(range_vals))/len(range_vals)
-    indices = (((y_val - min(range_vals)))/step_val).to(torch.int)
-    indices[indices == len(range_vals)] = indices[indices == len(range_vals)] - 1
-    scores = torch.nn.functional.softmax(model(X_val), dim=1)
-    all_scores = scores[torch.arange(len(X_val)), indices.long()]
+    _, all_scores = get_all_scores(range_vals, X_cal, y_cal, model)
+    scores, _ = get_all_scores(range_vals, X_val, y_val, model)
+
     alpha = args.alpha
 
     plt.scatter(X_val.detach().numpy(), y_val.detach().numpy(), label=r'(x_i, y_i)')
     for i in range(len(X_val)):
-        percentile_val = percentile_excluding_index(all_scores, i, alpha)
+        percentile_val = percentile_excluding_index(all_scores, alpha)
         intervals = find_intervals_above_value_with_interpolation(range_vals, scores[i], percentile_val)
         for interval in intervals:
             plt.scatter([X_val[i].detach().numpy(), X_val[i].detach().numpy()], [interval[0].detach().numpy(), interval[1].detach().numpy()], color="orange")
@@ -58,7 +56,7 @@ def plot_path(args, range_vals, X_val, y_val, model):
     plt.savefig("images/{}/dcp.png".format(args.model_path))
 
         
-def plot_prob(args, range_vals, X_val, y_val, model):
+def plot_prob(args, range_vals, X_val, y_val, X_cal, y_cal, model):
     set_style()
     plt.rcParams["mathtext.fontset"] = "cm"
     if not os.path.exists("images/{}".format(args.model_path)):
@@ -71,15 +69,12 @@ def plot_prob(args, range_vals, X_val, y_val, model):
         os.mkdir("images/{}/pi".format(args.model_path))
         
 
-    step_val = (max(range_vals) - min(range_vals))/len(range_vals)
-    indices = (((y_val - min(range_vals)))/step_val).to(torch.int)
-    indices[indices == len(range_vals)] = indices[indices == len(range_vals)] - 1
-    scores = torch.nn.functional.softmax(model(X_val), dim=1)
-    all_scores = scores[torch.arange(len(X_val)), indices.long()]
+    _, all_scores = get_all_scores(range_vals, X_cal, y_cal, model)
+    scores, _ = get_all_scores(range_vals, X_val, y_val, model)
 
 
     alpha = args.alpha
-    for i in range(len(X_val)):
+    for i in range(len(X_val[:25])):
         plt.clf()
         plt.plot(range_vals.detach().numpy(), scores[i].detach().numpy(), label=r'$\mathbb{Q}(y \mid x_{n+1})$')
         plt.xlabel(r'$y$')
@@ -87,7 +82,7 @@ def plot_prob(args, range_vals, X_val, y_val, model):
         plt.grid(None)
         plt.tight_layout()
 
-        percentile_val = percentile_excluding_index(all_scores, i, alpha)
+        percentile_val = percentile_excluding_index(all_scores, alpha)
         coverage, length = calc_length_coverage(scores[i], range_vals, percentile_val, y_val[i])
 
         plt.plot([torch.min(range_vals).detach().numpy(), torch.max(range_vals).detach().numpy()], [percentile_val.detach().numpy(), percentile_val.detach().numpy()], label=r'Confidence Level $\alpha$')
@@ -99,7 +94,7 @@ def plot_prob(args, range_vals, X_val, y_val, model):
         else:
             plt.savefig("images/{}/wrong/{}.png".format(args.model_path, i))
     
-    for i in range(len(X_val)):
+    for i in range(len(X_val[:25])):
         plt.clf()
         list_of_ranks = calculate_ranks(scores[i], all_scores)
         plt.plot(range_vals.detach().numpy(), list_of_ranks)

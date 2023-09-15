@@ -19,11 +19,10 @@ argument_values = {
     "devices": [1], 
     "batch_size": [32],
     "loss_type": ["cross_entropy"],
-    "dataset_name": ["concrete"],
     "model": ["mlp"],
     "weight_decay": [1e-4],
     "optimizer": ["adamw"],
-    "dataset": ["bimodal", "bio", "blog", "community", "concrete", "diabetes", "log_normal", "meps_19", "meps_20", "meps_21", "parkinsons", "solar"],
+    "dataset_name": ["bimodal", "bio", "blog", "community", "concrete", "diabetes", "log_normal", "meps_19", "meps_20", "meps_21", "parkinsons", "solar"],
     "model_path": [None]
 }
 # Create all possible argument combinations

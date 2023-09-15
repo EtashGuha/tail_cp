@@ -13,32 +13,6 @@ import warnings
 import pickle
 import copy
 
-def row_differences(matrix, initial_matrix=None):
-    if initial_matrix is None:
-        n, d = matrix.shape
-        expanded_matrix = matrix[:, np.newaxis, :]  # Add a new axis to the matrix
-        # Calculate the pairwise differences
-        diff_matrix = expanded_matrix - expanded_matrix.transpose(1, 0, 2)
-        return diff_matrix
-    else:
-        initial_matrix[-1, :, :] = matrix[-1] - matrix
-        initial_matrix[:, -1, :] = matrix - matrix[-1]
-        return initial_matrix
-
-def nd_kernel(X, y, h=.1, initial_kernel_X=None, initial_kernel_Y=None):
-    diff_X = row_differences(X)
-    diff_Y = row_differences(y)
-    kernel_X = np.sum(np.exp(-1 * np.sum(np.square(diff_X), axis=2)/(h*h)), axis=1)
-    kernel_Y = np.sum(np.exp(-1 * np.sum(np.square(diff_Y), axis=2)/(h*h)), axis=1)
-    scores = kernel_X * kernel_Y
-    return scores
-
-
-def nd_kernel_single(x, y, allX, ally):
-    diff_x = np.sum(np.exp(-1 * np.sum(np.square(x - allX), dim=1)))
-    diff_y = np.sum(np.exp(-1 * np.sum(np.square(y - ally), dim=1)))
-    return (diff_x * diff_y).item()
-
 def plot(args, i, all_label_scores, range_vals, cutoff):
     if not os.path.exists("images/{}".format(args.dataset_name)):
         os.mkdir("images/{}".format(args.dataset_name))
