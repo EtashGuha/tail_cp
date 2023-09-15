@@ -186,9 +186,12 @@ def get_data(args):
     elif name == "lei":
         with open("datasets/lei.pkl", "rb") as f:
             X, y = pickle.load(f)
-    elif name == "age":
-        breakpoint()
+    elif name == "cuteness":
+        with open("datasets/cuteness.pkl", "rb") as f:
+            X, y = pickle.load(f)
     return X, y        
+
+
 
 
 
@@ -199,7 +202,7 @@ def get_loaders(args):
     X_train, X_val, y_train, y_val = train_test_split(X_normalized, y_normalized, test_size=args.test_size, random_state=args.seed)
 
     # divide the data into proper training set and calibration set
-    if args.model != "resnet":
+    if args.dataset_name != "cuteness":
         scalerX = StandardScaler()
         scalerX = scalerX.fit(X_train)
         X_train = scalerX.transform(X_train)

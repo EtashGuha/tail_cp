@@ -4,9 +4,6 @@ import pickle
 import os
 
 def percentile_excluding_index(vector, percentile):
-        # Remove the value at the i-th index
-
-        # Calculate the percentile on the modified vector
         percentile_value = torch.quantile(vector, percentile)
         
         return percentile_value
@@ -68,6 +65,7 @@ def get_all_scores(range_vals, X, y, model):
     all_scores = scores[torch.arange(len(X)), indices_up.long()] * weight_up + scores[torch.arange(len(X)), indices_down.long()] * weight_down
     all_scores[bad_indices] = 0
     return scores, all_scores
+
 def get_cp_lists(args, range_vals, X_val, y_val, model):
 
     scores, all_scores = get_all_scores(range_vals, X_val, y_val, model)
