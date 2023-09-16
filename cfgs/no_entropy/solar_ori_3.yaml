@@ -1,10 +1,10 @@
 model: mlp
-model_path: solar_mle_we
+model_path: solar_ne
 dataset_name: solar
-loss_type: simplest
+loss_type: thomas_lq
 batch_size: 32
-constraint_weights: 1, 5
-devices: 0
+constraint_weights: 0, 1
+devices: 1
 ffn_activation: relu
 ffn_hidden_dim: 1000
 ffn_num_layers: 4

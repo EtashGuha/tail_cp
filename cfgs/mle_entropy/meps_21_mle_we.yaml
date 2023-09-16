@@ -4,12 +4,12 @@ dataset_name: meps_21
 loss_type: simplest
 range_size: 50
 batch_size: 32
-devices: 1
-lr: 1e-4
+devices: 0
+lr: 1e-7
 ffn_activation: relu
 ffn_hidden_dim: 1000
 ffn_num_layers: 4
-constraint_weights: 1, 1
+constraint_weights: 1, 5
 max_epochs: 3000
 lq_norm_val: .5
 weight_decay: 1e-4

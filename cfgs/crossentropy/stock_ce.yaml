@@ -1,16 +1,16 @@
 model: mlp
-model_path: solar_ne
-dataset_name: solar
-loss_type: thomas_lq
+model_path: stock_ce
+dataset_name: stock
+loss_type: crossentropy
 range_size: 50
 batch_size: 32
-devices: 1
+devices: 0
 lr: 1e-4
 ffn_activation: relu
 ffn_hidden_dim: 1000
 ffn_num_layers: 4
 constraint_weights: 0, 1
 max_epochs: 3000
-lq_norm_val: .5
 weight_decay: 1e-4
 optimizer: adamw
+lq_norm_val: .5
