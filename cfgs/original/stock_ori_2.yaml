@@ -1,16 +1,16 @@
 model: mlp
-model_path: meps_21_ori
-dataset_name: meps_21
+model_path: stock_ori_2
+dataset_name: stock
 loss_type: thomas_lq
 range_size: 50
-batch_size: 32
+batch_size: 8
 devices: 1
-lr: 1e-7
+lr: 1e-3
 ffn_activation: relu
-ffn_hidden_dim: 1000
+ffn_hidden_dim: 500
 ffn_num_layers: 4
 constraint_weights: 1, 5
 max_epochs: 3000
-lq_norm_val: .5
 weight_decay: 1e-4
 optimizer: adamw
+lq_norm_val: .5

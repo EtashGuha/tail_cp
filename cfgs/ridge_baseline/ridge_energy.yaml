@@ -1,4 +1,4 @@
 dataset_name: energy
-lei: True
+ridge: True
 range_size: 50
-model_path: lei_energy
+model_path: ridge_energy

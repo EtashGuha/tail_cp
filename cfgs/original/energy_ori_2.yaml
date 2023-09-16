@@ -1,17 +1,16 @@
 model: mlp
-model_path: hetero_2
-dataset_name: hetero
+model_path: energy_ori_2
+dataset_name: energy
 loss_type: thomas_lq
 range_size: 50
-batch_size: 16
+batch_size: 32
 devices: 1
-lr: 1e-6
+lr: 1e-5
 ffn_activation: relu
 ffn_hidden_dim: 1000
 ffn_num_layers: 4
-constraint_weights: .25, 5
+constraint_weights: .5, 5
 max_epochs: 3000
-lq_norm_val: .5
-plot_dcp: True
-weight_decay: 1e-3
+weight_decay: 1e-4
 optimizer: adamw
+lq_norm_val: .5

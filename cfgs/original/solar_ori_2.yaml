@@ -1,16 +1,16 @@
+model: mlp
+model_path: solar_ori_2
+dataset_name: solar
+loss_type: thomas_lq
 batch_size: 32
-constraint_weights: 1, 5
-dataset_name: log_normal
+constraint_weights: .5, 5
 devices: 1
 ffn_activation: relu
 ffn_hidden_dim: 1000
 ffn_num_layers: 4
-loss_type: thomas_lq
 lq_norm_val: 0.5
 lr: 0.0001
 max_epochs: 3000
-model: mlp
-model_path: log_normal_ori
 optimizer: adamw
-range_size: 50
+range_size: 100
 weight_decay: 0.0001
