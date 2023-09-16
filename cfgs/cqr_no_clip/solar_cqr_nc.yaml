@@ -1,0 +1,4 @@
+cqr: true
+dataset_name: solar
+model_path: solar_cqr_no_clip
+cqr_no_clipping: true

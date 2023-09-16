@@ -119,44 +119,48 @@ def set_style():
     })
 
 def conf_pred(args, lambda_, method="lasso"):
-    input_size, range_vals = get_input_and_range(args)
-    train_loader, val_loader = get_loaders(args)
+    if os.path.exists("saved_results/{}/ridge.pkl".format(args.dataset_name)):
+        with open("saved_results/{}/ridge.pkl".format(args.dataset_name), "rb") as f:
+            coverages, lengths = pickle.load(f)
+    else:
+        input_size, range_vals = get_input_and_range(args)
+        train_loader, val_loader = get_loaders(args)
 
-    X_train = train_loader.dataset.tensors[0].detach().numpy().astype('float16')
-    Y_train = train_loader.dataset.tensors[1].unsqueeze(-1).detach().numpy().astype('float16')
-    X_val = val_loader.dataset.tensors[0].detach().numpy().astype('float16')
-    y_val = val_loader.dataset.tensors[1].unsqueeze(-1).detach().numpy().astype('float16')
+        X_train = train_loader.dataset.tensors[0].detach().numpy().astype('float16')
+        Y_train = train_loader.dataset.tensors[1].unsqueeze(-1).detach().numpy().astype('float16')
+        X_val = val_loader.dataset.tensors[0].detach().numpy().astype('float16')
+        y_val = val_loader.dataset.tensors[1].unsqueeze(-1).detach().numpy().astype('float16')
 
 
-    # Training
-    if method is "lasso":
-        lmd = [lambda_ / X_train.shape[0]]
-        res = lasso_path(X_train, Y_train, alphas=lmd, eps=1e-12)
-        coef = res[1].ravel()
+        # Training
+        if method is "lasso":
+            lmd = [lambda_ / X_train.shape[0]]
+            res = lasso_path(X_train, Y_train, alphas=lmd, eps=1e-12)
+            coef = res[1].ravel()
 
-    elif method is "logcosh":
-        coef = logcosh_reg(X_train, Y_train, lambda_)
+        elif method is "logcosh":
+            coef = logcosh_reg(X_train, Y_train, lambda_)
 
-    elif method is "linex":
-        coef = linex_reg(X_train, Y_train, lambda_)
+        elif method is "linex":
+            coef = linex_reg(X_train, Y_train, lambda_)
 
-    # Ranking on the test
-    mu = X_val.dot(coef)
-    sorted_residual = np.sort(np.abs(y_val.flatten() - mu.flatten()))
-    index = int((X_val.shape[0]) * (1 - args.alpha))
-    quantile = sorted_residual[index]
-    
-    coverages = []
-    lengths = []
-    for i in range(len(X_val)):  
-        mu = X_val[i].dot(coef)
-        if mu - quantile <= y_val[i] <= mu + quantile:
-            coverages.append(1)
-        else:  
-            coverages.append(0)
-        lengths.append(2 * quantile)
-    if not os.path.exists("saved_results/{}".format(args.dataset_name)):
-        os.mkdir("saved_results/{}".format(args.dataset_name))
-    with open("saved_results/{}/ridge.pkl".format(args.dataset_name), "wb") as f:
-        pickle.dump((coverages, lengths), f)
-    return np.mean(coverages), np.std(coverages), np.mean(lengths), np.std(lengths)
+        # Ranking on the test
+        mu = X_val.dot(coef)
+        sorted_residual = np.sort(np.abs(y_val.flatten() - mu.flatten()))
+        index = int((X_val.shape[0]) * (1 - args.alpha))
+        quantile = sorted_residual[index]
+        
+        coverages = []
+        lengths = []
+        for i in range(len(X_val)):  
+            mu = X_val[i].dot(coef)
+            if mu - quantile <= y_val[i] <= mu + quantile:
+                coverages.append(1)
+            else:  
+                coverages.append(0)
+            lengths.append(2 * quantile)
+        if not os.path.exists("saved_results/{}".format(args.dataset_name)):
+            os.mkdir("saved_results/{}".format(args.dataset_name))
+        with open("saved_results/{}/ridge.pkl".format(args.dataset_name), "wb") as f:
+            pickle.dump((coverages, lengths), f)
+    return np.mean(coverages), np.std(coverages), np.mean(lengths), np.std(lengths), np.std(coverages)/np.sqrt(len(coverages)), np.std(lengths)/np.sqrt(len(lengths))
