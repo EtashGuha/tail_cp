@@ -12,6 +12,11 @@ if torch.cuda.is_available():
 else:
     device = "cpu"
 
+def compute_coverage_len_lists(y_val_cqr,cqr_lower_clipped,cqr_upper_clipped):
+    y_test = np.asarray(y_val_cqr)
+    coverages = (y_test >= cqr_lower_clipped) & (y_test <= cqr_upper_clipped)
+    lengths = abs(cqr_upper_clipped - cqr_lower_clipped)
+    return coverages, lengths
 
 def compute_coverage_len(y_test, y_lower, y_upper):
     """ Compute average coverage and length of prediction intervals
@@ -36,27 +41,7 @@ def compute_coverage_len(y_test, y_lower, y_upper):
     avg_length = np.mean(abs(y_upper - y_lower))
     return coverage, avg_length
 
-def compute_coverage_len_lists(y_test, y_lower, y_upper):
-    """ Compute average coverage and length of prediction intervals
 
-    Parameters
-    ----------
-
-    y_test : numpy array, true labels (n)
-    y_lower : numpy array, estimated lower bound for the labels (n)
-    y_upper : numpy array, estimated upper bound for the labels (n)
-
-    Returns
-    -------
-
-    coverage : float, average coverage
-    avg_length : float, average length
-
-    """
-    y_test = np.asarray(y_test)
-    coverages = list((y_test >= y_lower) & (y_test <= y_upper))
-    lengths = list(abs(y_upper - y_lower))
-    return coverages, lengths
 
 def run_icp(nc, X_train, y_train, X_cal, y_cal, X_test, idx_train, idx_cal, significance, condition=None):
     """ Run split conformal method
@@ -115,10 +100,10 @@ def compute_coverage(y_test,y_lower,y_upper,significance,name=""):
     avg_length : float, average length
 
     """
-    in_the_range = np.sum((y_test >= y_lower) & (y_test <= y_upper))
-    coverage = in_the_range / len(y_test) * 100
-    avg_coverage = np.mean(in_the_range) * 100
-    std_coverage = np.std(in_the_range)
+
+    coverages = (y_test >= y_lower) & (y_test <= y_upper)
+    coverage = np.mean(coverages)
+    std_coverage = np.std(coverages)
     print("%s: Percentage in the range (expecting %.2f): %f" % (name, 100 - significance*100, coverage))
     sys.stdout.flush()
 
@@ -126,7 +111,7 @@ def compute_coverage(y_test,y_lower,y_upper,significance,name=""):
     std_length = abs(np.std(y_upper - y_lower))
     print("%s: Average length: %f" % (name, avg_length))
     sys.stdout.flush()
-    return avg_coverage, std_coverage, avg_length, std_length
+    return coverage, std_coverage, avg_length, std_length
 
 ###############################################################################
 # Deep neural network for conditional quantile regression
