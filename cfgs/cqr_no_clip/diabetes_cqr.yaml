@@ -1,4 +1,0 @@
-cqr: true
-dataset_name: diabetes
-model_path: diabetes_cqr_no_clip
-cqr_no_clipping: true

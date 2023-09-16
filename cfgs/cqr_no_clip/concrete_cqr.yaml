@@ -1,4 +1,0 @@
-cqr: true
-dataset_name: concrete
-model_path: concrete_cqr_no_clip
-cqr_no_clipping: true
