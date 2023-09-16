@@ -36,7 +36,7 @@ def set_style():
     })
 
 def plot_path(args, range_vals, X_val, y_val, model):
-    set_style()
+    # set_style()
     plt.rcParams["mathtext.fontset"] = "cm"
     if not os.path.exists("images/{}".format(args.model_path)):
         os.mkdir("images/{}".format(args.model_path))
@@ -56,15 +56,14 @@ def plot_path(args, range_vals, X_val, y_val, model):
 
         
 def plot_prob(args, range_vals, X_val, y_val, model):
-    set_style()
-    plt.rcParams["mathtext.fontset"] = "cm"
+    # set_style()
     if not os.path.exists("images/{}".format(args.model_path)):
         os.mkdir("images/{}".format(args.model_path))
     if not os.path.exists("images/{}/right".format(args.model_path)):
         os.mkdir("images/{}/right".format(args.model_path))
     if not os.path.exists("images/{}/wrong".format(args.model_path)):
         os.mkdir("images/{}/wrong".format(args.model_path))
-    if not os.path.exists("images/{}_pi".format(args.model_path)):
+    if not os.path.exists("images/{}/pi".format(args.model_path)):
         os.mkdir("images/{}/pi".format(args.model_path))
         
 
@@ -74,19 +73,32 @@ def plot_prob(args, range_vals, X_val, y_val, model):
     alpha = args.alpha
     for i in range(len(X_val[:25])):
         plt.clf()
-        plt.plot(range_vals.detach().numpy(), scores[i].detach().numpy(), label=r'$\mathbb{Q}(y \mid x_{n+1})$')
+        # fig, ax = plt.subplots()
+        plt.title(f"{args.model_path}")
+        sns.set_style("ticks", {
+            "font.family": "serif",
+            "font.serif": ["Times", "Palatino", "serif"]
+        })
+        sns.lineplot(
+            x=range_vals.detach().numpy(),
+            y=scores[i].detach().numpy(),
+            label=r'$\mathbb{Q}(y \mid x_{n+1})$',
+            color='black',
+            linewidth=2.5,
+            marker='o',
+            markerfacecolor='white',
+            markeredgecolor='black'        
+        )
         plt.xlabel(r'$y$')
         plt.ylabel(r'$\mathbb{P}(y \mid x_{n+1})$')
-        plt.grid(None)
         plt.tight_layout()
-
         percentile_val = percentile_excluding_index(all_scores, alpha)
         coverage, length = calc_length_coverage(scores[i], range_vals, percentile_val, y_val[i])
 
-        plt.plot([torch.min(range_vals).detach().numpy(), torch.max(range_vals).detach().numpy()], [percentile_val.detach().numpy(), percentile_val.detach().numpy()], label=r'Confidence Level $\alpha$')
-        plt.plot([y_val[i].detach().numpy(), y_val[i].detach().numpy()], [torch.min(scores).detach().numpy(), torch.max(scores).detach().numpy()], label=r'Ground Truth $y_{n+1}$')
+        plt.axhline(y=percentile_val.detach().numpy(), label=r'Confidence Level $\alpha$', color='#a8acb3', linestyle='--',)
+        plt.axvline(x=y_val[i].detach().numpy(), label=r'Ground Truth $y_{n+1}$', color='#646566', linestyle=':',)
         plt.legend()
-        
+        plt.show() # remove after
         if coverage == 1:
             plt.savefig("images/{}/right/{}.png".format(args.model_path, i))
         else:
