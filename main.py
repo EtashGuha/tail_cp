@@ -31,7 +31,7 @@ def get_model(args):
         train_loader, val_loader = get_loaders(args)
         logger = TensorBoardLogger("tb_logs", name=args.model_path)
         callbacks = get_callbacks(args)
-        trainer = pl.Trainer(max_epochs=args.max_epochs, gpus=[args.devices], logger=logger, callbacks=callbacks)
+        trainer = pl.Trainer(max_epochs=args.max_epochs, gpus=[int(args.devices)], logger=logger, callbacks=callbacks)
         trainer.fit(model, train_loader, val_loader)
         torch.save(model.state_dict(), total_path)
     model.eval()
