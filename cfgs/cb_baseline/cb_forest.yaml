@@ -1,0 +1,4 @@
+dataset_name: forest
+cb: True
+range_size: 50
+model_path: cb_forest

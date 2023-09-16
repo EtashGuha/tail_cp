@@ -1,0 +1,3 @@
+cb: true
+dataset_name: bimodal
+model_path: bimodal_cb

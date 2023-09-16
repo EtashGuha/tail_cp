@@ -15,12 +15,10 @@ from baselines.ridge import conf_pred
 import random
 import numpy as np
 from cqr_helpers.run_cqr import run_cqr
-
-# Conformal Bayes imports
 import jax.numpy as jnp
-from conformal_bayes.run_sparsereg_conformal import fit_mcmc_laplace, run_cb
+from conformal_bayes_code.run_sparsereg_conformal import fit_mcmc_laplace, run_cb, get_posterior
 
-torch.autograd.set_detect_anomaly(True)
+# torch.autograd.set_detect_anomaly(True)
 def get_model(args):
     input_size, range_vals = get_input_and_range(args)
 
@@ -39,31 +37,6 @@ def get_model(args):
     model.eval()
     return model
 
-# Looking for args.post_path: root directory/conformal_bayes/post_samples + a folder
-# The folder contains the 3 distributions beta_post.npy, intercept_post.npy, b_post.npy
-# args.post_save_path will be used for the new folder directory to save 
-def get_posterior(args, X_train, y_train):
-    beta_post = None
-    intercept_post = None
-    b_post = None
-    sigma_post = None
-    folder_path = f"conformal_bayes/post_samples/{args.post_path}"
-    if os.path.exists(folder_path):
-        beta_post = jnp.load(f"{folder_path}/beta_post.npy")
-        intercept_post = jnp.load(f"{folder_path}/intercept_post.npy")
-        b_post = jnp.load(f"{folder_path}/b_post.npy")
-        sigma_post = jnp.load(f"{folder_path}/sigma_post.npy")
-    else:
-        beta_post, intercept_post, b_post, sigma_post = fit_mcmc_laplace(X_train, y_train, args.seed)
-        if (args.post_save_path):
-            total_save_path = f"conformal_bayes/post_samples/{args.post_save_path}"
-            os.mkdir(total_save_path)
-            np.save(f"{total_save_path}/beta_post", beta_post)
-            np.save(f"{total_save_path}/intercept_post", intercept_post)
-            np.save(f"{total_save_path}/b_post", b_post)
-            np.save(f"{total_save_path}/sigma_post", sigma_post)
-    return beta_post, intercept_post, b_post, sigma_post
-
 def seed_everything(seed):
     random.seed(seed)
     os.environ['PYTHONHASHSEED'] = str(seed)
@@ -80,30 +53,25 @@ def main(args):
     input_size, range_vals = get_input_and_range(args)
     if args.cb:
         beta_post, intercept_post, b_post, sigma_post = get_posterior(args, X_train, y_train)
-        mean_coverage, std_coverage, mean_length, std_length = run_cb(X_train, y_train, X_val, y_val, beta_post, intercept_post, b_post, sigma_post)
-        log_results((args.dataset_name, args.model_path, mean_coverage, std_coverage, mean_length, std_length))
-    if args.cqr:
-        mean_coverage, std_coverage, mean_length, std_length = run_cqr(args)
-        log_results((args.dataset_name, args.model_path, mean_coverage, std_coverage, mean_length, std_length))
-    if args.lei:
-        mean_coverage, std_coverage, mean_length, std_length = lei(args)
-        log_results((args.dataset_name, args.model_path, mean_coverage, std_coverage, mean_length, std_length))
+        mean_coverage, std_coverage, mean_length, std_length, coverage_ce, length_ce = run_cb(X_train, y_train, X_val, y_val, beta_post, intercept_post, sigma_post, args)
+    elif args.cqr:
+        mean_coverage, std_coverage, mean_length, std_length, coverage_ce, length_ce = run_cqr(args)
+    elif args.lei:
+        mean_coverage, std_coverage, mean_length, std_length, coverage_ce, length_ce = lei(args)
     elif args.ridge:  
-        mean_coverage, std_coverage, mean_length, std_length = conf_pred(args, lambda_=.1)
-        log_results((args.dataset_name, args.model_path, mean_coverage, std_coverage, mean_length, std_length))
+        mean_coverage, std_coverage, mean_length, std_length, coverage_ce, length_ce = conf_pred(args, lambda_=.1)
     elif args.plot_dcp:
         model = get_model(args) 
-        mean_coverage, std_coverage, mean_length, std_length = get_cp(args, range_vals, X_val, y_val, model)
+        mean_coverage, std_coverage, mean_length, std_length, coverage_ce, length_ce = get_cp(args, range_vals, X_val, y_val, model)
         plot_path(args, range_vals, X_val, y_val, model)
         plot_prob(args, range_vals, X_val, y_val, model)
     else:  
         model = get_model(args) 
         coverages, lengths = get_cp_lists(args, range_vals, X_val, y_val, model)
-        mean_coverage, std_coverage, mean_length, std_length = get_cp(args, range_vals,  X_val, y_val, model)
+        mean_coverage, std_coverage, mean_length, std_length, coverage_ce, length_ce = get_cp(args, range_vals,  X_val, y_val, model)
         plot_prob(args, range_vals, X_val, y_val, model)
-        log_results((args.dataset_name, args.model_path, mean_coverage, std_coverage, mean_length, std_length))
         plot_violin(args, coverages, lengths)
-        
+    log_results((args.dataset_name, args.model_path, mean_coverage, std_coverage, mean_length, std_length))
     return mean_coverage, std_coverage, mean_length, std_length
 
 if __name__ == '__main__':
