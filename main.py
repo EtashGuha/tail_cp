@@ -17,8 +17,8 @@ import numpy as np
 from cqr_helpers.run_cqr import run_cqr
 import jax.numpy as jnp
 from conformal_bayes_code.run_sparsereg_conformal import fit_mcmc_laplace, run_cb, get_posterior
+from sheets import log_results
 
-# torch.autograd.set_detect_anomaly(True)
 def get_model(args):
     input_size, range_vals = get_input_and_range(args)
 
@@ -71,7 +71,8 @@ def main(args):
         mean_coverage, std_coverage, mean_length, std_length, coverage_ce, length_ce = get_cp(args, range_vals,  X_val, y_val, model)
         plot_prob(args, range_vals, X_val, y_val, model)
         plot_violin(args, coverages, lengths)
-    log_results((args.dataset_name, args.model_path, mean_coverage, std_coverage, mean_length, std_length))
+    log_results((args.dataset_name, args.model_path, mean_coverage, std_coverage, mean_length, std_length, coverage_ce, length_ce))
+       
     return mean_coverage, std_coverage, mean_length, std_length
 
 if __name__ == '__main__':
