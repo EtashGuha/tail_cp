@@ -67,6 +67,10 @@ def lei(args):
         cal_scores = get_cal_data(X_train, y_train, X_val, y_val)
         real_get_cov_len_fast = partial(get_cov_len_fast, args=args,range_vals =range_vals,cal_scores=cal_scores, X_train=X_train, y_train=y_train, X_val=X_val, y_val=y_val)
 
+    if os.path.exists("saved_results/{}/lei.pkl".format(args.dataset_name)):
+        with open("saved_results/{}/lei.pkl".format(args.dataset_name), "rb") as f:
+            coverages, lengths = pickle.load(f)
+    else:
         lengths = []
         coverages = []
         
@@ -82,7 +86,11 @@ def lei(args):
             os.mkdir("saved_results/{}".format(args.dataset_name))
         with open("saved_results/{}/lei.pkl".format(args.dataset_name), "wb") as f:
             pickle.dump((coverages, lengths), f)
+<<<<<<< HEAD
     return np.mean(coverages).item(), np.std(coverages).item(), np.mean(lengths).item(), np.std(lengths).item(), np.std(coverages)/np.sqrt(len(coverages)), np.std(lengths)/np.sqrt(len(lengths))
+=======
+    return np.mean(coverages).item(), np.std(coverages).item(), np.mean(lengths).item(), np.std(lengths).item()
+>>>>>>> 2e8ea47 (getting ready for merge)
 
             
 

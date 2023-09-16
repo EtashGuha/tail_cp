@@ -131,6 +131,11 @@ def conf_pred(args, lambda_, method="lasso"):
         X_val = val_loader.dataset.tensors[0].detach().numpy().astype('float16')
         y_val = val_loader.dataset.tensors[1].unsqueeze(-1).detach().numpy().astype('float16')
 
+        # Training
+        if method is "lasso":
+            lmd = [lambda_ / X_train.shape[0]]
+            res = lasso_path(X_train, Y_train, alphas=lmd, eps=1e-12)
+            coef = res[1].ravel()
 
         # Training
         if method is "lasso":
