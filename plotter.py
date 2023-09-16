@@ -108,9 +108,12 @@ def plot_violin(args, coverages, lengths):
     with open("saved_results/{}/ridge.pkl".format(args.dataset_name), "rb") as f:
         ridge_coverages, ridge_lengths = pickle.load(f)
     
-    all_coverages = [coverages, lei_coverages, ridge_coverages]
-    all_lengths = [torch.stack(lengths).detach().numpy(), torch.stack(lei_lengths).detach().numpy(), ridge_lengths]
-    labels = ["Ours", "Lei", "Ridge" ]
+    with open("saved_results/{}/cqr.pkl".format(args.dataset_name), "rb") as f:
+        cqr_coverages, cqr_lengths = pickle.load(f)
+    
+    all_coverages = [coverages, lei_coverages, ridge_coverages, cqr_coverages]
+    all_lengths = [torch.stack(lengths).detach().numpy(), torch.stack(lei_lengths).detach().numpy(), ridge_lengths, cqr_lengths]
+    labels = ["Ours", "Lei", "Ridge", "CQR"]
 
     plt.clf()
     sns.set(style="whitegrid")  # Optional styling
