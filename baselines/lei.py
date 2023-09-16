@@ -50,7 +50,7 @@ def get_cov_len_fast(i, args, range_vals, cal_scores, X_train, y_train, X_val, y
 
 def lei(args):
     if os.path.exists("saved_results/{}/lei.pkl".format(args.dataset_name)):
-        with open("saved_results/{}/lei.pkl".format(args.dataset_name), "wb") as f:
+        with open("saved_results/{}/lei.pkl".format(args.dataset_name), "rb") as f:
             coverages, lengths = pickle.load(f)
     else:
         input_size, range_vals = get_input_and_range(args)
