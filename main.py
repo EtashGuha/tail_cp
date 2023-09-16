@@ -15,9 +15,10 @@ from baselines.ridge import conf_pred
 import random
 import numpy as np
 from cqr_helpers.run_cqr import run_cqr
+import jax.numpy as jnp
+from conformal_bayes_code.run_sparsereg_conformal import fit_mcmc_laplace, run_cb, get_posterior
 from sheets import log_results
 
-torch.autograd.set_detect_anomaly(True)
 def get_model(args):
     input_size, range_vals = get_input_and_range(args)
 
@@ -50,7 +51,10 @@ def main(args):
     X_train, y_train, X_val, y_val = get_train_val_data(args)
 
     input_size, range_vals = get_input_and_range(args)
-    if args.cqr:
+    if args.cb:
+        beta_post, intercept_post, b_post, sigma_post = get_posterior(args, X_train, y_train)
+        mean_coverage, std_coverage, mean_length, std_length, coverage_ce, length_ce = run_cb(X_train, y_train, X_val, y_val, beta_post, intercept_post, sigma_post, args)
+    elif args.cqr:
         mean_coverage, std_coverage, mean_length, std_length, coverage_ce, length_ce = run_cqr(args)
     elif args.lei:
         mean_coverage, std_coverage, mean_length, std_length, coverage_ce, length_ce = lei(args)

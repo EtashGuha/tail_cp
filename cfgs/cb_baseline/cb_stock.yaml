@@ -1,0 +1,4 @@
+dataset_name: stock
+cb: True
+range_size: 50
+model_path: cb_stock

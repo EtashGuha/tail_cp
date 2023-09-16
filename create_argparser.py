@@ -20,8 +20,8 @@ def get_parser_args():
     parser.add_argument('--alpha', type=float, default=.1, help='Name of the model')
     parser.add_argument('--annealing', action="store_true", help='Name of the model')
     parser.add_argument('--cqr', action="store_true", help='Name of the model')
+    parser.add_argument('--cb', action="store_true", help='Name of the model')
     parser.add_argument('--cqr_no_clipping', action="store_true", help='Name of the model')
-
 
     parser.add_argument('--lei', action="store_true", help='Name of the model')
     parser.add_argument('--ridge', action="store_true", help='Name of the model')
