@@ -117,9 +117,18 @@ def plot_violin(args, coverages, lengths):
     with open("saved_results/{}/ridge.pkl".format(args.dataset_name), "rb") as f:
         ridge_coverages, ridge_lengths = pickle.load(f)
     
-    all_coverages = [coverages, lei_coverages, ridge_coverages]
-    all_lengths = [torch.stack(lengths).detach().numpy(), torch.stack(lei_lengths).detach().numpy(), ridge_lengths]
-    labels = ["Ours", "Lei", "Ridge" ]
+    with open("saved_results/{}/cqr.pkl".format(args.dataset_name), "rb") as f:
+        cqr_coverages, cqr_lengths = pickle.load(f)
+
+    with open("saved_results/{}/cqr_nc.pkl".format(args.dataset_name), "rb") as f:
+        cqr_nc_coverages, cqr_nc_lengths = pickle.load(f)
+    
+    with open("saved_results/{}/cb.pkl".format(args.dataset_name), "rb") as f:
+        cb_coverages, cb_lengths = pickle.load(f) 
+
+    all_coverages = [coverages, lei_coverages, ridge_coverages, cqr_coverages, cqr_nc_coverages, cb_coverages]
+    all_lengths = [torch.stack(lengths).detach().numpy(), torch.stack(lei_lengths).detach().numpy(), ridge_lengths, cqr_lengths, cqr_nc_lengths, cb_lengths]
+    labels = ["Ours", "Lei", "Ridge", "CQR", "CQR-NC" "CB"]
 
     plt.clf()
     sns.set(style="whitegrid")  # Optional styling

@@ -1,0 +1,3 @@
+cqr: true
+dataset_name: cuteness
+model_path: cuteness_cqr

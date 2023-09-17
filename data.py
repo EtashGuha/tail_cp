@@ -172,6 +172,26 @@ def get_data(args):
         
         y = df[response_name].values
         X = df[col_names].values
+    elif name == "stock":
+        data = Dataset("stock")
+        X = data.x
+        y = data.y
+    elif name == "breastcancer":
+        data = Dataset("breastcancer")
+        X = data.x
+        y = data.y
+    elif name == "pendulum":
+        data = Dataset("pendulum")
+        X = data.x
+        y = data.y
+    elif name == "energy":
+        data = Dataset("energy")
+        X = data.x
+        y = data.y
+    elif name == "forest":
+        data = Dataset("forest")
+        X = data.x
+        y = data.y
     elif name == "parkinsons":
         data = Dataset("parkinsons")
         X = data.x

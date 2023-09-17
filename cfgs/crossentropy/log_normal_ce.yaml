@@ -1,11 +1,11 @@
 batch_size: 32
 constraint_weights: 0, 1
 dataset_name: log_normal
-devices: 1
+devices: 0
 ffn_activation: relu
 ffn_hidden_dim: 1000
 ffn_num_layers: 4
-loss_type: cross_entropy
+loss_type: crossentropy
 lq_norm_val: 0.5
 lr: 0.0001
 max_epochs: 3000

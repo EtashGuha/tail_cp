@@ -2,14 +2,14 @@ model: mlp
 model_path: lei_2
 dataset_name: lei
 loss_type: thomas_lq
-range_size: 50
+range_size: 100
 batch_size: 16
 devices: 1
 lr: 1e-5
 ffn_activation: relu
 ffn_hidden_dim: 1000
 ffn_num_layers: 4
-constraint_weights: .25, 5
+constraint_weights: .5, 5
 max_epochs: 3000
 lq_norm_val: .5
 plot_dcp: True

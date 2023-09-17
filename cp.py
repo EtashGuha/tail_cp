@@ -83,4 +83,4 @@ def get_cp_lists(args, range_vals, X_val, y_val, model):
 
 def get_cp(args, range_vals, X_val, y_val, model):
     coverages, lengths = get_cp_lists(args, range_vals, X_val, y_val, model)
-    return np.mean(coverages).item(), np.std(coverages).item(), torch.mean(torch.stack(lengths)).item(), torch.std(torch.stack(lengths)).item()
+    return np.mean(coverages).item(), np.std(coverages).item(), torch.mean(torch.stack(lengths)).item(), torch.std(torch.stack(lengths)).item(), np.std(coverages)/np.sqrt(len(coverages)),  torch.std(torch.stack(lengths)).item()/np.sqrt(len(lengths))

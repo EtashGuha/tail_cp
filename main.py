@@ -6,7 +6,7 @@ from pytorch_lightning.loggers import TensorBoardLogger
 import pytorch_lightning as pl
 from models.model import GenModule
 import os
-# from sheets import log_results
+from sheets import log_results
 from cp import get_cp, get_cp_lists
 from plotter import plot_prob, plot_path, plot_violin
 from models.callbacks import get_callbacks
@@ -15,8 +15,10 @@ from baselines.ridge import conf_pred
 import random
 import numpy as np
 from cqr_helpers.run_cqr import run_cqr
+import jax.numpy as jnp
+from conformal_bayes_code.run_sparsereg_conformal import fit_mcmc_laplace, run_cb, get_posterior
+from sheets import log_results
 
-torch.autograd.set_detect_anomaly(True)
 def get_model(args):
     input_size, range_vals = get_input_and_range(args)
 
@@ -29,7 +31,7 @@ def get_model(args):
         train_loader, val_loader = get_loaders(args)
         logger = TensorBoardLogger("tb_logs", name=args.model_path)
         callbacks = get_callbacks(args)
-        trainer = pl.Trainer(max_epochs=args.max_epochs, gpus=args.devices, logger=logger, callbacks=callbacks)
+        trainer = pl.Trainer(max_epochs=args.max_epochs, gpus=[int(args.devices)], logger=logger, callbacks=callbacks)
         trainer.fit(model, train_loader, val_loader)
         torch.save(model.state_dict(), total_path)
     model.eval()
@@ -49,28 +51,28 @@ def main(args):
     X_train, y_train, X_val, y_val = get_train_val_data(args)
 
     input_size, range_vals = get_input_and_range(args)
-    if args.cqr:
-        mean_coverage, std_coverage, mean_length, std_length = run_cqr(args)
-        log_results((args.dataset_name, args.model_path, mean_coverage, std_coverage, mean_length, std_length))
-    if args.lei:
-        mean_coverage, std_coverage, mean_length, std_length = lei(args)
-        log_results((args.dataset_name, args.model_path, mean_coverage, std_coverage, mean_length, std_length))
+    if args.cb:
+        beta_post, intercept_post, b_post, sigma_post = get_posterior(args, X_train, y_train)
+        mean_coverage, std_coverage, mean_length, std_length, coverage_ce, length_ce = run_cb(X_train, y_train, X_val, y_val, beta_post, intercept_post, sigma_post, args)
+    elif args.cqr:
+        mean_coverage, std_coverage, mean_length, std_length, coverage_ce, length_ce = run_cqr(args)
+    elif args.lei:
+        mean_coverage, std_coverage, mean_length, std_length, coverage_ce, length_ce = lei(args)
     elif args.ridge:  
-        mean_coverage, std_coverage, mean_length, std_length = conf_pred(args, lambda_=.1)
-        log_results((args.dataset_name, args.model_path, mean_coverage, std_coverage, mean_length, std_length))
+        mean_coverage, std_coverage, mean_length, std_length, coverage_ce, length_ce = conf_pred(args, lambda_=.1)
     elif args.plot_dcp:
         model = get_model(args) 
-        mean_coverage, std_coverage, mean_length, std_length = get_cp(args, range_vals, X_val, y_val, model)
+        mean_coverage, std_coverage, mean_length, std_length, coverage_ce, length_ce = get_cp(args, range_vals, X_val, y_val, model)
         plot_path(args, range_vals, X_val, y_val, model)
         plot_prob(args, range_vals, X_val, y_val, model)
     else:  
         model = get_model(args) 
         coverages, lengths = get_cp_lists(args, range_vals, X_val, y_val, model)
-        mean_coverage, std_coverage, mean_length, std_length = get_cp(args, range_vals,  X_val, y_val, model)
-        plot_prob(args, range_vals, X_val, y_val, model)
-        log_results((args.dataset_name, args.model_path, mean_coverage, std_coverage, mean_length, std_length))
-        plot_violin(args, coverages, lengths)
-        
+        mean_coverage, std_coverage, mean_length, std_length, coverage_ce, length_ce = get_cp(args, range_vals,  X_val, y_val, model)
+        # plot_prob(args, range_vals, X_val, y_val, model)
+        # plot_violin(args, coverages, lengths)
+    log_results((args.dataset_name, args.model_path, mean_coverage, std_coverage, mean_length, std_length, coverage_ce, length_ce))
+       
     return mean_coverage, std_coverage, mean_length, std_length
 
 if __name__ == '__main__':

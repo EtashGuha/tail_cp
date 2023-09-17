@@ -10,8 +10,17 @@ from cqr_helpers.nonconformist.nc import QuantileRegErrFunc
 from cqr_helpers.nonconformist.nc import RegressorNc
 import os
 import pickle
+import copy
 
 def run_cqr(args):
+    if not args.cqr_no_clipping and os.path.exists("saved_results/{}/cqr.pkl".format(args.dataset_name)):
+            with open("saved_results/{}/cqr.pkl".format(args.dataset_name), "rb") as f:
+                coverages, lengths = pickle.load(f)
+            return np.mean(coverages), np.std(coverages), np.mean(lengths), np.std(lengths), np.std(coverages)/np.sqrt(len(coverages)), np.std(lengths)/np.sqrt(len(lengths))
+    elif os.path.exists("saved_results/{}/cqr_nc.pkl".format(args.dataset_name)):
+            with open("saved_results/{}/cqr_nc.pkl".format(args.dataset_name), "rb") as f:
+                coverages, lengths = pickle.load(f)
+            return np.mean(coverages), np.std(coverages), np.mean(lengths), np.std(lengths), np.std(coverages)/np.sqrt(len(coverages)), np.std(lengths)/np.sqrt(len(lengths))
     input_size, range_vals = get_input_and_range(args)
     train_loader, val_loader = get_loaders(args)
 
@@ -20,6 +29,9 @@ def run_cqr(args):
     X_val = val_loader.dataset.tensors[0].detach().numpy()
     y_val = val_loader.dataset.tensors[1].unsqueeze(-1).detach().numpy()
 
+    if args.dataset_name == "cuteness":
+        X_train = X_train.reshape(len(X_train), -1)
+        X_val = X_val.reshape(len(X_val), -1)
 
     nn_learn_func = torch.optim.Adam
     epochs = 1000
@@ -72,18 +84,33 @@ def run_cqr(args):
     predictions = icp.predict(X_val_cqr, significance=significance)
     cqr_lower = predictions[:,0]
     cqr_upper = predictions[:,1]
-    
     # Clipping the output ranges to what's been seen in the train data
-    max_y = max(y_train_cqr)
-    min_y = min(y_train_cqr)
-    cqr_lower_clipped = np.array([max(min_y, y) for y in cqr_lower])
-    cqr_upper_clipped = np.array([min(max_y, y) for y in cqr_upper])
+    
+    max_y = np.max(y_train_cqr)
+    min_y = np.min(y_train_cqr)
+    cqr_lower[cqr_lower < min_y] = min_y
 
-    coverages, lengths = helper.compute_coverage_len_lists(y_val_cqr,cqr_lower_clipped,cqr_upper_clipped)
+
+    cqr_lower_clipped = copy.deepcopy(cqr_lower)
+    cqr_upper_clipped = copy.deepcopy(cqr_upper)
+    if not args.cqr_no_clipping:
+        cqr_lower_clipped[cqr_lower_clipped < min_y] = min_y
+        cqr_upper_clipped[cqr_upper_clipped > max_y] = max_y
+
+    
+    coverages, lengths = helper.compute_coverage_len_lists(y_val_cqr.squeeze(),cqr_lower_clipped,cqr_upper_clipped)
     if not os.path.exists("saved_results/{}".format(args.dataset_name)):
         os.mkdir("saved_results/{}".format(args.dataset_name))
-    with open("saved_results/{}/cqr.pkl".format(args.dataset_name), "wb") as f:
-        pickle.dump((coverages, lengths), f)
-    avg_coverage, std_coverage, avg_length, std_length = helper.compute_coverage(y_val_cqr,cqr_lower_clipped,cqr_upper_clipped,significance,"CQR Net")
+    if not args.cqr_no_clipping:
+        with open("saved_results/{}/cqr.pkl".format(args.dataset_name), "wb") as f:
+            pickle.dump((coverages, lengths), f)
+        with open("saved_results/{}/cqr_predictions.pkl".format(args.dataset_name), "wb") as f:
+            pickle.dump((cqr_lower_clipped, cqr_upper_clippeds), f)
+    else:
+        with open("saved_results/{}/cqr_nc.pkl".format(args.dataset_name), "wb") as f:
+            pickle.dump((coverages, lengths), f)
+        with open("saved_results/{}/cqr_predictions_nc.pkl".format(args.dataset_name), "wb") as f:
+            pickle.dump((cqr_lower_clipped, cqr_upper_clippeds), f)
+    avg_coverage, std_coverage, avg_length, std_length = helper.compute_coverage(y_val_cqr.squeeze(),cqr_lower_clipped,cqr_upper_clipped,significance,"CQR Net")
     print(f"CQR Coverage: {avg_coverage} +- {std_coverage} Length: {avg_length} +- {std_length}")
     return avg_coverage, std_coverage, avg_length, std_length
