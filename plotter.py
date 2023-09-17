@@ -126,7 +126,7 @@ def plot_violin(args, coverages, lengths):
     
     with open("saved_results/{}/cb.pkl".format(args.dataset_name), "rb") as f:
         cb_coverages, cb_lengths = pickle.load(f)
-        
+
     # Mean cb_coverages
     cb_coverages_axis_means = [np.mean(cb_coverages[:, i]) for i in range(len(cb_coverages[0]))]
     cb_lengths_axis_means = [np.mean(cb_lengths[:, i]) for i in range(len(cb_coverages[0]))]
@@ -140,12 +140,15 @@ def plot_violin(args, coverages, lengths):
             x=all_coverages[i],
             ax=ax_coverages,
             label=labels[i],
-            color=sns.color_palette("colorblind")[i]
+            color=sns.color_palette("colorblind")[i],
+            fill=True,
+            alpha=0.08
         )
+    ax_coverages.set_title('Coverage Density KDE')
     ax_coverages.set_xlabel('Coverages')
     ax_coverages.set_ylabel('Density')
     ax_coverages.set_yticks([])
-    ax_coverages.legend()
+    ax_coverages.legend(loc='upper left')
     fig_coverages.tight_layout()
     fig_coverages.savefig("images/{}/kdeplot_coverage.png".format(args.model_path))
 
@@ -155,12 +158,15 @@ def plot_violin(args, coverages, lengths):
             x=all_lengths[i],
             ax=ax_lengths,
             label=labels[i],
-            color=sns.color_palette("colorblind")[i]
+            color=sns.color_palette("colorblind")[i],
+            fill=True,
+            alpha=0.08
         )
+    ax_lengths.set_title('Length Density KDE')
     ax_lengths.set_xlabel('Lengths')
     ax_lengths.set_ylabel('Density')
     ax_lengths.set_yticks([])
-    ax_lengths.legend()
+    ax_lengths.legend(loc='upper left')
     fig_lengths.savefig("images/{}/kdeplot_coverage.png".format(args.model_path))
 
     # plt.clf()
