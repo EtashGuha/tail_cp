@@ -72,37 +72,34 @@ def plot_prob(args, range_vals, X_val, y_val, model):
 
     alpha = args.alpha
     for i in range(len(X_val[:25])):
-        plt.clf()
-        # fig, ax = plt.subplots()
-        plt.title(f"{args.model_path}")
+        fig, ax = plt.subplots()
         sns.set_style("ticks", {
             "font.family": "serif",
             "font.serif": ["Times", "Palatino", "serif"]
         })
         sns.lineplot(
+            ax=ax,
             x=range_vals.detach().numpy(),
             y=scores[i].detach().numpy(),
             label=r'$\mathbb{Q}(y \mid x_{n+1})$',
             color='black',
-            linewidth=2.5,
+            linewidth=2.8,
             marker='o',
             markerfacecolor='white',
             markeredgecolor='black'        
         )
-        plt.xlabel(r'$y$')
-        plt.ylabel(r'$\mathbb{P}(y \mid x_{n+1})$')
-        plt.tight_layout()
+        ax.set(title=f"{args.model_path}", xlabel=r'$y$', ylabel=r'$\mathbb{P}(y \mid x_{n+1})$')
         percentile_val = percentile_excluding_index(all_scores, alpha)
         coverage, length = calc_length_coverage(scores[i], range_vals, percentile_val, y_val[i])
-
-        plt.axhline(y=percentile_val.detach().numpy(), label=r'Confidence Level $\alpha$', color='#a8acb3', linestyle='--',)
-        plt.axvline(x=y_val[i].detach().numpy(), label=r'Ground Truth $y_{n+1}$', color='#646566', linestyle=':',)
-        plt.legend()
-        plt.show() # remove after
+        ax.axhline(y=percentile_val.detach().numpy(), label=r'Confidence Level $\alpha$', color='#a8acb3', linestyle='--',)
+        ax.axvline(x=y_val[i].detach().numpy(), label=r'Ground Truth $y_{n+1}$', color='#646566', linestyle=':',)
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.legend()
         if coverage == 1:
-            plt.savefig("images/{}/right/{}.png".format(args.model_path, i))
+            fig.savefig("images/{}/right/{}.png".format(args.model_path, i))
         else:
-            plt.savefig("images/{}/wrong/{}.png".format(args.model_path, i))
+            fig.savefig("images/{}/wrong/{}.png".format(args.model_path, i))
     
     for i in range(len(X_val[:25])):
         plt.clf()
