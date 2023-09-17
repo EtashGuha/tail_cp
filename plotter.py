@@ -76,7 +76,8 @@ def plot_prob(args, range_vals, X_val, y_val, model):
         sns.set_style("ticks", {
             "font.family": "serif",
             "font.serif": ["Times", "Palatino", "serif"]
-        })
+        },
+        ax=ax)
         sns.lineplot(
             ax=ax,
             x=range_vals.detach().numpy(),
@@ -100,7 +101,8 @@ def plot_prob(args, range_vals, X_val, y_val, model):
             fig.savefig("images/{}/right/{}.png".format(args.model_path, i))
         else:
             fig.savefig("images/{}/wrong/{}.png".format(args.model_path, i))
-    
+        fig.clf()
+
     for i in range(len(X_val[:25])):
         plt.clf()
         list_of_ranks = calculate_ranks(scores[i], all_scores)
@@ -110,7 +112,6 @@ def plot_prob(args, range_vals, X_val, y_val, model):
         plt.savefig("images/{}/pi/{}.png".format(args.model_path, i))
 
 def plot_violin(args, coverages, lengths):
-    
     with open("saved_results/{}/lei.pkl".format(args.dataset_name), "rb") as f:
         lei_coverages, lei_lengths = pickle.load(f)
     
@@ -124,38 +125,70 @@ def plot_violin(args, coverages, lengths):
         cqr_nc_coverages, cqr_nc_lengths = pickle.load(f)
     
     with open("saved_results/{}/cb.pkl".format(args.dataset_name), "rb") as f:
-        cb_coverages, cb_lengths = pickle.load(f) 
+        cb_coverages, cb_lengths = pickle.load(f)
+        
+    # Mean cb_coverages
+    cb_coverages_axis_means = [np.mean(cb_coverages[:, i]) for i in range(len(cb_coverages[0]))]
+    cb_lengths_axis_means = [np.mean(cb_lengths[:, i]) for i in range(len(cb_coverages[0]))]
 
-    all_coverages = [coverages, lei_coverages, ridge_coverages, cqr_coverages, cqr_nc_coverages, cb_coverages]
-    all_lengths = [torch.stack(lengths).detach().numpy(), torch.stack(lei_lengths).detach().numpy(), ridge_lengths, cqr_lengths, cqr_nc_lengths, cb_lengths]
-    labels = ["Ours", "Lei", "Ridge", "CQR", "CQR-NC" "CB"]
+    all_coverages = [coverages, lei_coverages, ridge_coverages, cqr_coverages, cqr_nc_coverages, cb_coverages_axis_means]
+    all_lengths = [torch.stack(lengths).detach().numpy(), torch.stack(lei_lengths).detach().numpy(), ridge_lengths, cqr_lengths, cqr_nc_lengths, cb_lengths_axis_means]
+    labels = ["Ours", "Lei", "Ridge", "CQR", "CQR-NC", "CB"]
+    fig_coverages, ax_coverages = plt.subplots()
+    for i in range(len(all_coverages)):
+        sns.kdeplot(
+            x=all_coverages[i],
+            ax=ax_coverages,
+            label=labels[i],
+            color=sns.color_palette("colorblind")[i]
+        )
+    ax_coverages.set_xlabel('Coverages')
+    ax_coverages.set_ylabel('Density')
+    ax_coverages.set_yticks([])
+    ax_coverages.legend()
+    fig_coverages.tight_layout()
+    fig_coverages.savefig("images/{}/kdeplot_coverage.png".format(args.model_path))
 
-    plt.clf()
-    sns.set(style="whitegrid")  # Optional styling
-    plt.figure(figsize=(8, 6))  # Optional figure size
+    fig_lengths, ax_lengths = plt.subplots()
+    for i in range(len(all_lengths)):
+        sns.kdeplot(
+            x=all_lengths[i],
+            ax=ax_lengths,
+            label=labels[i],
+            color=sns.color_palette("colorblind")[i]
+        )
+    ax_lengths.set_xlabel('Lengths')
+    ax_lengths.set_ylabel('Density')
+    ax_lengths.set_yticks([])
+    ax_lengths.legend()
+    fig_lengths.savefig("images/{}/kdeplot_coverage.png".format(args.model_path))
 
-    # Use the violinplot function to create the plot
-    sns.violinplot(data=all_coverages, inner="box", palette="Set3")
+    # plt.clf()
+    # sns.set(style="whitegrid")  # Optional styling
+    # plt.figure(figsize=(8, 6))  # Optional figure size
 
-    # Set labels and title
-    plt.xticks(range(len(labels)), labels)
-    plt.xlabel('Coverages')
-    plt.ylabel('Values')
-    plt.legend()
-    plt.savefig("images/{}/violin_coverage.png".format(args.model_path))
+    # # Use the violinplot function to create the plot
+    # sns.violinplot(data=all_coverages, inner="box", palette="Set3")
 
-    plt.clf()
-    sns.set(style="whitegrid")  # Optional styling
-    plt.figure(figsize=(8, 6))  # Optional figure size
+    # # Set labels and title
+    # plt.xticks(range(len(labels)), labels)
+    # plt.xlabel('Coverages')
+    # plt.ylabel('Values')
+    # plt.legend()
+    # plt.savefig("images/{}/violin_coverage.png".format(args.model_path))
 
-    # Use the violinplot function to create the plot
-    sns.violinplot(data=all_lengths, inner="box", palette="Set3")
+    # plt.clf()
+    # sns.set(style="whitegrid")  # Optional styling
+    # plt.figure(figsize=(8, 6))  # Optional figure size
 
-    # Set labels and title
-    plt.xticks(range(len(labels)), labels)
-    plt.xlabel('Lengths')
-    plt.ylabel('Values')
-    plt.legend()
-    plt.savefig("images/{}/violin_length.png".format(args.model_path))
+    # # Use the violinplot function to create the plot
+    # sns.violinplot(data=all_lengths, inner="box", palette="Set3")
+
+    # # Set labels and title
+    # plt.xticks(range(len(labels)), labels)
+    # plt.xlabel('Lengths')
+    # plt.ylabel('Values')
+    # plt.legend()
+    # plt.savefig("images/{}/violin_length.png".format(args.model_path))
 
 
