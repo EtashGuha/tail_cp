@@ -73,11 +73,10 @@ def plot_prob(args, range_vals, X_val, y_val, model):
     alpha = args.alpha
     for i in range(len(X_val[:25])):
         fig, ax = plt.subplots()
-        sns.set_style("ticks", {
+        sns.set_style("whitegrid", {
             "font.family": "serif",
             "font.serif": ["Times", "Palatino", "serif"]
-        },
-        ax=ax)
+        })
         sns.lineplot(
             ax=ax,
             x=range_vals.detach().numpy(),
