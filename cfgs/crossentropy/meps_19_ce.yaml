@@ -1,7 +1,7 @@
 model: mlp
 model_path: meps_19_ce
 dataset_name: meps_19
-loss_type: crossentropy
+loss_type: cross_entropy
 range_size: 50
 batch_size: 32
 devices: 0

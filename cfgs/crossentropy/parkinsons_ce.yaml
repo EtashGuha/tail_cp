@@ -1,7 +1,7 @@
 model: mlp
 model_path: parkinsons_ce
 dataset_name: parkinsons
-loss_type: crossentropy
+loss_type: cross_entropy
 range_size: 50
 batch_size: 8
 devices: 0
