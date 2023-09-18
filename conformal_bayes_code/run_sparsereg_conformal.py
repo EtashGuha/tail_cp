@@ -161,10 +161,10 @@ def run_cb(X_train, y_train, X_val, y_val, beta_post, intercept_post, sigma_post
         if not os.path.exists("saved_results/{}".format(args.dataset_name)):
             os.mkdir("saved_results/{}".format(args.dataset_name))
         with open("saved_results/{}/cb.pkl".format(args.dataset_name), "wb") as f:
-            pickle.dump((coverage_cb, length_cb), f)
-    mean_coverage = np.mean(coverage_cb)
-    std_coverage = np.std(coverage_cb)
-    se_coverage = np.std(coverage_cb)/np.sqrt(len(coverage_cb))
+            pickle.dump((coverage_cb_exact, length_cb), f)
+    mean_coverage = np.mean(coverage_cb_exact)
+    std_coverage = np.std(coverage_cb_exact)
+    se_coverage = np.std(coverage_cb_exact)/np.sqrt(len(coverage_cb_exact))
     mean_length = np.mean(length_cb)
     std_length = np.std(length_cb)
     se_length = np.std(length_cb)/np.sqrt(len(length_cb))

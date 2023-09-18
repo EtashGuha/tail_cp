@@ -6,6 +6,7 @@ from cp import calc_length_coverage, find_intervals_above_value_with_interpolati
 import seaborn as sns
 import pickle
 import numpy as np
+from data import get_train_val_data
 def find_rank(value, value_list):
     sorted_list = sorted(value_list)
     rank = 1
@@ -69,7 +70,8 @@ def plot_prob(args, range_vals, X_val, y_val, model):
 
     scores, all_scores = get_all_scores(range_vals, X_val, y_val, model)
 
-
+    
+    
     alpha = args.alpha
     for i in range(len(X_val[:25])):
         fig, ax = plt.subplots()
@@ -89,6 +91,15 @@ def plot_prob(args, range_vals, X_val, y_val, model):
             markeredgecolor='black'        
         )
         ax.set(title=f"{args.model_path}", xlabel=r'$y$', ylabel=r'$\mathbb{P}(y \mid x_{n+1})$')
+
+
+        # if args.dataset_name == "bimodal" or args.dataset_name == "log_normal":
+        #     _, y, _, _ = get_train_val_data(args)
+        #     hist, bins = np.histogram(y, bins=args.range_size)
+        #     # Calculate bin centers
+        #     bin_centers = (bins[:-1] + bins[1:]) / 2
+        #     plt.plot(bin_centers, hist/len(y), label="true distribution")
+
         percentile_val = percentile_excluding_index(all_scores, alpha)
         coverage, length = calc_length_coverage(scores[i], range_vals, percentile_val, y_val[i])
         ax.axhline(y=percentile_val.detach().numpy(), label=r'Confidence Level $\alpha$', color='#a8acb3', linestyle='--',)

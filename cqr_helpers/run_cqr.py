@@ -105,12 +105,13 @@ def run_cqr(args):
         with open("saved_results/{}/cqr.pkl".format(args.dataset_name), "wb") as f:
             pickle.dump((coverages, lengths), f)
         with open("saved_results/{}/cqr_predictions.pkl".format(args.dataset_name), "wb") as f:
-            pickle.dump((cqr_lower_clipped, cqr_upper_clippeds), f)
+            pickle.dump((cqr_lower_clipped, cqr_upper_clipped), f)
     else:
         with open("saved_results/{}/cqr_nc.pkl".format(args.dataset_name), "wb") as f:
             pickle.dump((coverages, lengths), f)
         with open("saved_results/{}/cqr_predictions_nc.pkl".format(args.dataset_name), "wb") as f:
-            pickle.dump((cqr_lower_clipped, cqr_upper_clippeds), f)
+            pickle.dump((cqr_lower_clipped, cqr_upper_clipped), f)
+
     avg_coverage, std_coverage, avg_length, std_length = helper.compute_coverage(y_val_cqr.squeeze(),cqr_lower_clipped,cqr_upper_clipped,significance,"CQR Net")
     print(f"CQR Coverage: {avg_coverage} +- {std_coverage} Length: {avg_length} +- {std_length}")
     return avg_coverage, std_coverage, avg_length, std_length

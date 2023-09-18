@@ -5,12 +5,12 @@ devices: 1
 ffn_activation: relu
 ffn_hidden_dim: 1000
 ffn_num_layers: 4
-loss_type: thomas_ne
+loss_type: thomas_lq
 lq_norm_val: 0.5
 lr: 0.0001
 max_epochs: 3000
 model: mlp
-model_path: log_normal_ori
+model_path: log_normal_ne
 optimizer: adamw
 range_size: 50
 weight_decay: 0.0001
