@@ -134,6 +134,8 @@ def plot_violin(args, coverages, lengths):
     all_coverages = [coverages, lei_coverages, ridge_coverages, cqr_coverages, cqr_nc_coverages, cb_coverages_axis_means]
     all_lengths = [torch.stack(lengths).detach().numpy(), torch.stack(lei_lengths).detach().numpy(), ridge_lengths, cqr_lengths, cqr_nc_lengths, cb_lengths_axis_means]
     labels = ["Ours", "Lei", "Ridge", "CQR", "CQR-NC", "CB"]
+    line_types = ['solid', 'dotted', '-', '--', 'dashdot', ':']
+    line_widths = [2.5, 1.2, 1.2, 2, 1.9, 2]
     fig_coverages, ax_coverages = plt.subplots()
     for i in range(len(all_coverages)):
         sns.kdeplot(
@@ -141,8 +143,8 @@ def plot_violin(args, coverages, lengths):
             ax=ax_coverages,
             label=labels[i],
             color=sns.color_palette("colorblind")[i],
-            fill=True,
-            alpha=0.08
+            linewidth=line_widths[i],
+            linestyle=line_types[i]
         )
     ax_coverages.set_title('Coverage Density KDE')
     ax_coverages.set_xlabel('Coverages')
@@ -159,8 +161,8 @@ def plot_violin(args, coverages, lengths):
             ax=ax_lengths,
             label=labels[i],
             color=sns.color_palette("colorblind")[i],
-            fill=True,
-            alpha=0.08
+            linewidth=line_widths[i],
+            linestyle=line_types[i]
         )
     ax_lengths.set_title('Length Density KDE')
     ax_lengths.set_xlabel('Lengths')
