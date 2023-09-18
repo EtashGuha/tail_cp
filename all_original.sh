@@ -4,7 +4,7 @@
 cfgs_dir="cfgs"
 
 # List of folder names
-folders=("heteroskedastic")
+folders=("cqr_no_clip")
 
 # Loop through each folder
 for folder in "${folders[@]}"; do
