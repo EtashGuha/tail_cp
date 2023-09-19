@@ -119,7 +119,7 @@ def plot_prob(args, range_vals, X_val, y_val, model):
         os.mkdir("images/{}/wrong".format(args.model_path))
     if not os.path.exists("images/{}/pi".format(args.model_path)):
         os.mkdir("images/{}/pi".format(args.model_path))
-        
+    
 
     scores, all_scores = get_all_scores(range_vals, X_val, y_val, model)
 
@@ -127,7 +127,7 @@ def plot_prob(args, range_vals, X_val, y_val, model):
     
     alpha = args.alpha
     for i in range(len(X_val[:25])):
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(8, 6))
         sns.set_style("whitegrid", {
             "font.family": "serif",
             "font.serif": ["Times", "Palatino", "serif"]
@@ -143,8 +143,9 @@ def plot_prob(args, range_vals, X_val, y_val, model):
             markerfacecolor='white',
             markeredgecolor='black'        
         )
-        ax.set(title=f"{args.model_path}", xlabel=r'$y$', ylabel=r'$\mathbb{P}(y \mid x_{n+1})$')
-
+        ax.set_title(f"{args.model_path}", fontname='serif', fontsize=16)
+        ax.set_xlabel(r'$y$', fontname='serif', fontsize=16 )
+        ax.set_ylabel(r'$\mathbb{P}(y \mid x_{n+1})$', fontname='serif', fontsize=16)
 
         # if args.dataset_name == "bimodal" or args.dataset_name == "log_normal":
         #     _, y, _, _ = get_train_val_data(args)
