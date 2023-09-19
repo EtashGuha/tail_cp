@@ -37,7 +37,6 @@ def set_style():
     })
 
 def plot_path(args, range_vals, X_val, y_val, model):
-    # set_style()
     plt.rcParams["mathtext.fontset"] = "cm"
     if not os.path.exists("images/{}".format(args.model_path)):
         os.mkdir("images/{}".format(args.model_path))
@@ -45,6 +44,7 @@ def plot_path(args, range_vals, X_val, y_val, model):
     scores, all_scores = get_all_scores(range_vals, X_val, y_val, model)
     alpha = args.alpha
     fig, ax_path = plt.subplots(figsize=(8, 6))
+    ax_path.set_ylabel('y', fontname='serif', fontsize=16)
     not_covered_x = []
     not_covered_y = []
     covered_x = []
@@ -94,17 +94,18 @@ def plot_path(args, range_vals, X_val, y_val, model):
     ax_path.scatter(
         covered_x,
         covered_y,
-        label=r'(d_i, y_i) Covered',
-        color='black'
+        label=r'$(x_i, y_i)$ Covered',
+        color='black',
+        s=20
     )
     ax_path.scatter(
         not_covered_x,
         not_covered_y,
-        label=r'(x_i, y_i) Not Covered',
+        label=r'$(x_i, y_i)$ Not Covered',
         color='white',
         edgecolors='black'
     )
-    ax_path.legend()
+    ax_path.legend(prop={'family': 'serif', 'size': 12})  # Set the legend font name and size
     fig.savefig("images/{}/dcp.png".format(args.model_path))
 
         
