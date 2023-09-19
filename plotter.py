@@ -43,17 +43,16 @@ def plot_path(args, range_vals, X_val, y_val, model):
         os.mkdir("images/{}".format(args.model_path))
     
     scores, all_scores = get_all_scores(range_vals, X_val, y_val, model)
-
     alpha = args.alpha
-
-    plt.scatter(X_val.detach().numpy(), y_val.detach().numpy(), label=r'(x_i, y_i)')
+    fig, ax_path = plt.subplots(figsize=(8, 6))
+    ax_path.scatter(X_val.detach().numpy(), y_val.detach().numpy(), label=r'(x_i, y_i)')
     for i in range(len(X_val)):
         percentile_val = percentile_excluding_index(all_scores, alpha)
         intervals = find_intervals_above_value_with_interpolation(range_vals, scores[i], percentile_val)
         for interval in intervals:
-            plt.scatter([X_val[i].detach().numpy(), X_val[i].detach().numpy()], [interval[0].detach().numpy(), interval[1].detach().numpy()], color="orange")
-    plt.legend()
-    plt.savefig("images/{}/dcp.png".format(args.model_path))
+            ax_path.scatter([X_val[i].detach().numpy(), X_val[i].detach().numpy()], [interval[0].detach().numpy(), interval[1].detach().numpy()], color="orange")
+    ax_path.legend()
+    fig.savefig("images/{}/dcp.png".format(args.model_path))
 
         
 def plot_prob(args, range_vals, X_val, y_val, model):
