@@ -114,4 +114,4 @@ def run_cqr(args):
 
     avg_coverage, std_coverage, avg_length, std_length = helper.compute_coverage(y_val_cqr.squeeze(),cqr_lower_clipped,cqr_upper_clipped,significance,"CQR Net")
     print(f"CQR Coverage: {avg_coverage} +- {std_coverage} Length: {avg_length} +- {std_length}")
-    return avg_coverage, std_coverage, avg_length, std_length
+    return avg_coverage, std_coverage, avg_length, std_length, np.mean(coverages)/np.sqrt(len(coverages)), np.mean(lengths)/np.sqrt(len(lengths))

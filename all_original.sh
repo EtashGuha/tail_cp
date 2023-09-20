@@ -4,7 +4,7 @@
 cfgs_dir="cfgs"
 
 # List of folder names
-folders=("cqr_no_clip")
+folders=("cqr")
 
 # Loop through each folder
 for folder in "${folders[@]}"; do
