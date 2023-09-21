@@ -66,16 +66,30 @@ def plot_prob(args, range_vals, X_val, y_val, model):
         os.mkdir("images/{}/wrong".format(args.model_path))
     if not os.path.exists("images/{}/pi".format(args.model_path)):
         os.mkdir("images/{}/pi".format(args.model_path))
-    ## Need to add loading methods for cqr. For right now, lets pretend the prediction exist
-    cqr_lower = [0.2] * 26
-    cqr_upper = [0.4] * 26
-    scores, all_scores = get_all_scores(range_vals, X_val, y_val, model)
 
-<<<<<<< HEAD
-=======
+    ## Load CQR
+    cqr_lower = None
+    cqr_upper = None
+    if os.path.exists(f"saved_results/{args.dataset_name}/cqr_predictions.pkl"):
+        with open(f"saved_results/{args.dataset_name}/cqr_predictions.pkl", "rb") as f:
+                cqr_lower, cqr_upper = pickle.load(f)
+
+    # Load Lei
+    lei_probs = None
+    if os.path.exists(f"saved_results/{args.dataset_name}/lei_probs.pkl"):
+        with open(f"saved_results/{args.dataset_name}/lei_probs.pkl", "rb") as f:
+                lei_probs = pickle.load(f)[0]
     
-    
->>>>>>> origin
+    # Load CHR
+    chr_probs = None
+    if os.path.exists(f"saved_results/{args.dataset_name}/chr_probs.pkl"):
+        with open(f"saved_results/{args.dataset_name}/chr_probs.pkl", "rb") as f:
+                in_probs = pickle.load(f)[0]
+                subsequence_length = 1000 // len(lei_probs)
+                reshaped_chr = in_probs.reshape(len(lei_probs), subsequence_length)
+                chr_probs = np.sum(reshaped_chr, axis=1)
+
+    scores, all_scores = get_all_scores(range_vals, X_val, y_val, model)
     alpha = args.alpha
     for i in range(len(X_val[:25])):
         fig, ax = plt.subplots()
@@ -83,6 +97,8 @@ def plot_prob(args, range_vals, X_val, y_val, model):
             "font.family": "serif",
             "font.serif": ["Times", "Palatino", "serif"]
         })
+
+        # Plot CP
         sns.lineplot(
             ax=ax,
             x=range_vals.detach().numpy(),
@@ -94,6 +110,30 @@ def plot_prob(args, range_vals, X_val, y_val, model):
             markerfacecolor='white',
             markeredgecolor='black'        
         )
+
+        # Plot Lei
+        if lei_probs is not None:
+            sns.lineplot(
+                ax=ax,
+                x=range_vals.detach().numpy(),
+                y=lei_probs,
+                label='Lei',
+                color='black',
+                linewidth=1.5,
+                marker='.',       
+            )
+            
+        # Plot CHR
+        if chr_probs is not None:
+            sns.lineplot(
+                ax=ax,
+                x=range_vals.detach().numpy(),
+                y=chr_probs,
+                label='CHR',
+                color='black',
+                linewidth=1.7,
+                marker='^',       
+            )
         ax.set(title=f"{args.model_path}", xlabel=r'$y$', ylabel=r'$\mathbb{P}(y \mid x_{n+1})$')
 
 
@@ -109,8 +149,10 @@ def plot_prob(args, range_vals, X_val, y_val, model):
         ax.axhline(y=percentile_val.detach().numpy(), label=r'Confidence Level $\alpha$', color='#a8acb3', linestyle='--')
         ax.axvline(x=y_val[i].detach().numpy(), label=r'Ground Truth $y_{n+1}$', color='#646566', dashes=[0, 0, 1, 1])
         # CQR Lower and Upper Predictions
-        ax.axvline(x=cqr_lower[i], label=r'CQR Lower$', color='#1E88E5', dashes=[0, 0, 1, 2])
-        ax.axvline(x=cqr_upper[i], label=r'CQR Upper$', color='#1E88E5', dashes=[0, 0, 1, 2])
+        if cqr_lower is not None:
+            ax.axvline(x=cqr_lower[i], label=r'CQR Lower', color='#1E88E5', dashes=[0, 0, 1, 2])
+        if cqr_upper is not None:
+            ax.axvline(x=cqr_upper[i], label=r'CQR Upper', color='#1E88E5', dashes=[0, 0, 1, 2])
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         ax.legend()
