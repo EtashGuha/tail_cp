@@ -65,10 +65,10 @@ def plot_prob(args, range_vals, X_val, y_val, model):
         os.mkdir("images/{}/wrong".format(args.model_path))
     if not os.path.exists("images/{}/pi".format(args.model_path)):
         os.mkdir("images/{}/pi".format(args.model_path))
-        
-
+    ## Need to add loading methods for cqr. For right now, lets pretend the prediction exist
+    cqr_lower = [0.2] * 26
+    cqr_upper = [0.4] * 26
     scores, all_scores = get_all_scores(range_vals, X_val, y_val, model)
-
 
     alpha = args.alpha
     for i in range(len(X_val[:25])):
@@ -91,8 +91,11 @@ def plot_prob(args, range_vals, X_val, y_val, model):
         ax.set(title=f"{args.model_path}", xlabel=r'$y$', ylabel=r'$\mathbb{P}(y \mid x_{n+1})$')
         percentile_val = percentile_excluding_index(all_scores, alpha)
         coverage, length = calc_length_coverage(scores[i], range_vals, percentile_val, y_val[i])
-        ax.axhline(y=percentile_val.detach().numpy(), label=r'Confidence Level $\alpha$', color='#a8acb3', linestyle='--',)
-        ax.axvline(x=y_val[i].detach().numpy(), label=r'Ground Truth $y_{n+1}$', color='#646566', linestyle=':',)
+        ax.axhline(y=percentile_val.detach().numpy(), label=r'Confidence Level $\alpha$', color='#a8acb3', linestyle='--')
+        ax.axvline(x=y_val[i].detach().numpy(), label=r'Ground Truth $y_{n+1}$', color='#646566', dashes=[0, 0, 1, 1])
+        # CQR Lower and Upper Predictions
+        ax.axvline(x=cqr_lower[i], label=r'CQR Lower$', color='#1E88E5', dashes=[0, 0, 1, 2])
+        ax.axvline(x=cqr_upper[i], label=r'CQR Upper$', color='#1E88E5', dashes=[0, 0, 1, 2])
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         ax.legend()
