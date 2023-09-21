@@ -1,7 +1,7 @@
 model: mlp
 model_path: bimodal_ce
 dataset_name: bimodal
-loss_type: crossentropy
+loss_type: cross_entropy
 range_size: 20
 batch_size: 32
 devices: 0

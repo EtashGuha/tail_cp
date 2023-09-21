@@ -35,6 +35,7 @@ def get_cov_len_fast(i, args, range_vals, cal_scores, X_train, y_train, X_val, y
     h=.1
     diff_Xi = np.exp(-1 * np.sum(np.square(X_val[i] - X_train), axis=1)/(h*h))
     all_label_scores = []
+    probs = []
     for r in range_vals:
         all_scores = copy.deepcopy(cal_scores)
         diff_yi = np.exp(-1 * np.square(r.item() - y_train)/(h*h))
@@ -43,10 +44,12 @@ def get_cov_len_fast(i, args, range_vals, cal_scores, X_train, y_train, X_val, y
         sorted_indices = np.argsort(all_scores)
         relative_rank = np.where(sorted_indices == len(all_scores) - 1)[0].item()/(len(all_scores) - 1)
         all_label_scores.append(relative_rank)
-    
+        probs.append(new_score)
     plot(args, i, all_label_scores, range_vals, .1)
+    probs = np.asarray(probs)
+    probs = probs/np.sum(probs)
     coverage, length = calc_length_coverage(all_label_scores, range_vals, .1, y_val[i].item())
-    return coverage, length
+    return coverage, length, probs
 
 def lei(args):
     if os.path.exists("saved_results/{}/lei.pkl".format(args.dataset_name)):
@@ -54,7 +57,6 @@ def lei(args):
             coverages, lengths = pickle.load(f)
     else:
         input_size, range_vals = get_input_and_range(args)
-
         train_loader, val_loader = get_loaders(args)
 
 
@@ -73,19 +75,21 @@ def lei(args):
     else:
         lengths = []
         coverages = []
-        
+        all_probs = []
         num_processes = 10
 
         with multiprocessing.Pool(processes=num_processes) as pool:
             results = list(tqdm(pool.imap(real_get_cov_len_fast, list(range(len(X_val)))), total=(len(X_val))))
         coverages = [res[0] for res in results]
         lengths = [res[1] for res in results]
-
+        all_probs = np.asarray([res[2] for res in results])
         
         if not os.path.exists("saved_results/{}".format(args.dataset_name)):
             os.mkdir("saved_results/{}".format(args.dataset_name))
         with open("saved_results/{}/lei.pkl".format(args.dataset_name), "wb") as f:
             pickle.dump((coverages, lengths), f)
+        with open("saved_results/{}/lei_probs.pkl".format(args.dataset_name), "wb") as f:
+            pickle.dump((all_probs), f)
     return np.mean(coverages).item(), np.std(coverages).item(), np.mean(lengths).item(), np.std(lengths).item(), np.std(coverages)/np.sqrt(len(coverages)), np.std(lengths)/np.sqrt(len(lengths))
 
             

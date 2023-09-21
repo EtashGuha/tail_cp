@@ -1,7 +1,7 @@
 model: mlp
 model_path: solar_ce
 dataset_name: solar
-loss_type: crossentropy
+loss_type: cross_entropy
 batch_size: 32
 constraint_weights: 0, 1
 devices: 0

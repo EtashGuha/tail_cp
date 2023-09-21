@@ -13,14 +13,14 @@ import pickle
 import copy
 
 def run_cqr(args):
-    if not args.cqr_no_clipping and os.path.exists("saved_results/{}/cqr.pkl".format(args.dataset_name)):
-            with open("saved_results/{}/cqr.pkl".format(args.dataset_name), "rb") as f:
-                coverages, lengths = pickle.load(f)
-            return np.mean(coverages), np.std(coverages), np.mean(lengths), np.std(lengths), np.std(coverages)/np.sqrt(len(coverages)), np.std(lengths)/np.sqrt(len(lengths))
-    elif os.path.exists("saved_results/{}/cqr_nc.pkl".format(args.dataset_name)):
-            with open("saved_results/{}/cqr_nc.pkl".format(args.dataset_name), "rb") as f:
-                coverages, lengths = pickle.load(f)
-            return np.mean(coverages), np.std(coverages), np.mean(lengths), np.std(lengths), np.std(coverages)/np.sqrt(len(coverages)), np.std(lengths)/np.sqrt(len(lengths))
+    if not args.cqr_no_clipping and os.path.exists("saved_results/{}/cqr.pkl".format(args.dataset_name)) and os.path.exists("saved_results/{}/cqr_predictions.pkl".format(args.dataset_name)):
+        with open("saved_results/{}/cqr.pkl".format(args.dataset_name), "rb") as f:
+            coverages, lengths = pickle.load(f)
+        return np.mean(coverages), np.std(coverages), np.mean(lengths), np.std(lengths), np.std(coverages)/np.sqrt(len(coverages)), np.std(lengths)/np.sqrt(len(lengths))
+    elif args.cqr_no_clipping and os.path.exists("saved_results/{}/cqr_nc.pkl".format(args.dataset_name)) and os.path.exists("saved_results/{}/cqr_predictions_nc.pkl".format(args.dataset_name)):
+        with open("saved_results/{}/cqr_nc.pkl".format(args.dataset_name), "rb") as f:
+            coverages, lengths = pickle.load(f)
+        return np.mean(coverages), np.std(coverages), np.mean(lengths), np.std(lengths), np.std(coverages)/np.sqrt(len(coverages)), np.std(lengths)/np.sqrt(len(lengths))
     input_size, range_vals = get_input_and_range(args)
     train_loader, val_loader = get_loaders(args)
 
@@ -105,12 +105,13 @@ def run_cqr(args):
         with open("saved_results/{}/cqr.pkl".format(args.dataset_name), "wb") as f:
             pickle.dump((coverages, lengths), f)
         with open("saved_results/{}/cqr_predictions.pkl".format(args.dataset_name), "wb") as f:
-            pickle.dump((cqr_lower_clipped, cqr_upper_clippeds), f)
+            pickle.dump((cqr_lower_clipped, cqr_upper_clipped), f)
     else:
         with open("saved_results/{}/cqr_nc.pkl".format(args.dataset_name), "wb") as f:
             pickle.dump((coverages, lengths), f)
         with open("saved_results/{}/cqr_predictions_nc.pkl".format(args.dataset_name), "wb") as f:
-            pickle.dump((cqr_lower_clipped, cqr_upper_clippeds), f)
+            pickle.dump((cqr_lower_clipped, cqr_upper_clipped), f)
+
     avg_coverage, std_coverage, avg_length, std_length = helper.compute_coverage(y_val_cqr.squeeze(),cqr_lower_clipped,cqr_upper_clipped,significance,"CQR Net")
     print(f"CQR Coverage: {avg_coverage} +- {std_coverage} Length: {avg_length} +- {std_length}")
-    return avg_coverage, std_coverage, avg_length, std_length
+    return avg_coverage, std_coverage, avg_length, std_length, np.mean(coverages)/np.sqrt(len(coverages)), np.mean(lengths)/np.sqrt(len(lengths))

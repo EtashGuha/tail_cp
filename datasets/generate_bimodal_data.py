@@ -17,4 +17,4 @@ for i in range(n):
 y = np.asarray(y)
 X = np.asarray(X)
 with open("datasets/bimodal.pkl", "wb") as f:
-    pickle.dump((X, y), f)`
+    pickle.dump((X, y), f)

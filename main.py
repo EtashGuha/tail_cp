@@ -18,6 +18,7 @@ from cqr_helpers.run_cqr import run_cqr
 import jax.numpy as jnp
 from conformal_bayes_code.run_sparsereg_conformal import fit_mcmc_laplace, run_cb, get_posterior
 from sheets import log_results
+from chr.run_chr import get_chr
 
 def get_model(args):
     input_size, range_vals = get_input_and_range(args)
@@ -51,7 +52,9 @@ def main(args):
     X_train, y_train, X_val, y_val = get_train_val_data(args)
 
     input_size, range_vals = get_input_and_range(args)
-    if args.cb:
+    if args.chr:
+        mean_coverage, std_coverage, mean_length, std_length, coverage_ce, length_ce = get_chr(args)
+    elif args.cb:
         beta_post, intercept_post, b_post, sigma_post = get_posterior(args, X_train, y_train)
         mean_coverage, std_coverage, mean_length, std_length, coverage_ce, length_ce = run_cb(X_train, y_train, X_val, y_val, beta_post, intercept_post, sigma_post, args)
     elif args.cqr:
@@ -69,8 +72,8 @@ def main(args):
         model = get_model(args) 
         coverages, lengths = get_cp_lists(args, range_vals, X_val, y_val, model)
         mean_coverage, std_coverage, mean_length, std_length, coverage_ce, length_ce = get_cp(args, range_vals,  X_val, y_val, model)
-        # plot_prob(args, range_vals, X_val, y_val, model)
-        # plot_violin(args, coverages, lengths)
+        plot_prob(args, range_vals, X_val, y_val, model)
+        plot_violin(args, coverages, lengths)
     log_results((args.dataset_name, args.model_path, mean_coverage, std_coverage, mean_length, std_length, coverage_ce, length_ce))
        
     return mean_coverage, std_coverage, mean_length, std_length
