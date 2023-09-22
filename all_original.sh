@@ -4,11 +4,11 @@
 cfgs_dir="cfgs"
 
 # List of folder names
-folders=("")
+folders=("ridge_baseline" "best" "chr" "cqr" "cqr_no_clip" "lei_baseline" "ridge_baseline" "fong")
 
 # Specify the range of seeds you want to iterate over
-seed_start=1
-seed_end=10  # Change this to the desired end seed
+seed_start=0
+seed_end=5  # Change this to the desired end seed
 
 # Loop through each folder
 for folder in "${folders[@]}"; do
