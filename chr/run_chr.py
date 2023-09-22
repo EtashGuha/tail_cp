@@ -23,8 +23,8 @@ import pickle
 import pdb
 
 def get_chr(args):
-    if os.path.exists("saved_results/{}/chr.pkl".format(args.dataset_name)):
-        with open("saved_results/{}/chr.pkl".format(args.dataset_name), "rb") as f:
+    if os.path.exists("saved_results/{}_{}/chr.pkl".format(args.dataset_name, args.seed)):
+        with open("saved_results/{}_{}/chr.pkl".format(args.dataset_name, args.seed), "rb") as f:
             coverages, lengths = pickle.load(f)
     else:
         X_train, y_train, X_val, y_val = get_train_val_data(args)
@@ -58,12 +58,12 @@ def get_chr(args):
 
         # Evaluate results
         res, coverages, lengths = evaluate_predictions(pred, y_val, X=X_val)
-        if not os.path.exists("saved_results/{}".format(args.dataset_name)):
-            os.mkdir("saved_results/{}".format(args.dataset_name))
-        with open("saved_results/{}/chr.pkl".format(args.dataset_name), "wb") as f:
+        if not os.path.exists("saved_results/{}_{}".format(args.dataset_name, args.seed)):
+            os.mkdir("saved_results/{}_{}".format(args.dataset_name, args.seed))
+        with open("saved_results/{}_{}/chr.pkl".format(args.dataset_name, args.seed), "wb") as f:
             pickle.dump((coverages, lengths), f)
-        with open("saved_results/{}/chr_preds.pkl".format(args.dataset_name), "wb") as f:
+        with open("saved_results/{}_{}/chr_preds.pkl".format(args.dataset_name, args.seed), "wb") as f:
             pickle.dump((pred), f)
-        with open("saved_results/{}/chr_probs.pkl".format(args.dataset_name), "wb") as f:
+        with open("saved_results/{}_{}/chr_probs.pkl".format(args.dataset_name, args.seed), "wb") as f:
             pickle.dump((histograms), f)
     return np.mean(coverages).item(), np.std(coverages).item(), np.mean(lengths).item(), np.std(lengths).item(), np.std(coverages)/np.sqrt(len(coverages)), np.std(lengths)/np.sqrt(len(lengths))

@@ -72,8 +72,8 @@ def set_style():
     })
 
 def conf_pred(args, lambda_, method="lasso"):
-    if os.path.exists("saved_results/{}/ridge.pkl".format(args.dataset_name)):
-        with open("saved_results/{}/ridge.pkl".format(args.dataset_name), "rb") as f:
+    if os.path.exists("saved_results/{}_{}/ridge.pkl".format(args.dataset_name, args.seed)):
+        with open("saved_results/{}_{}/ridge.pkl".format(args.dataset_name, args.seed), "rb") as f:
             coverages, lengths = pickle.load(f)
     else:
         input_size, range_vals = get_input_and_range(args)
@@ -117,8 +117,8 @@ def conf_pred(args, lambda_, method="lasso"):
             else:  
                 coverages.append(0)
             lengths.append(2 * quantile)
-        if not os.path.exists("saved_results/{}".format(args.dataset_name)):
-            os.mkdir("saved_results/{}".format(args.dataset_name))
-        with open("saved_results/{}/ridge.pkl".format(args.dataset_name), "wb") as f:
+        if not os.path.exists("saved_results/{}_{}".format(args.dataset_name, args.seed)):
+            os.mkdir("saved_results/{}_{}".format(args.dataset_name, args.seed))
+        with open("saved_results/{}_{}/ridge.pkl".format(args.dataset_name, args.seed), "wb") as f:
             pickle.dump((coverages, lengths), f)
     return np.mean(coverages), np.std(coverages), np.mean(lengths), np.std(lengths), np.std(coverages)/np.sqrt(len(coverages)), np.std(lengths)/np.sqrt(len(lengths))

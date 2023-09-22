@@ -74,15 +74,14 @@ def main(args):
         mean_coverage, std_coverage, mean_length, std_length, coverage_ce, length_ce = get_cp(args, range_vals,  X_val, y_val, model)
         plot_prob(args, range_vals, X_val, y_val, model)
         plot_violin(args, coverages, lengths)
-    log_results((args.dataset_name, args.model_path, mean_coverage, std_coverage, mean_length, std_length, coverage_ce, length_ce))
+    log_results((args.dataset_name, args.model_path, mean_coverage, std_coverage, mean_length, std_length, coverage_ce, length_ce, args.seed))
        
     return mean_coverage, std_coverage, mean_length, std_length
 
 if __name__ == '__main__':
     torch.set_float32_matmul_precision('medium')
-    for random_state_train_test_id in range(1):
-        args = get_parser_args()
-        setattr(args, "seed", random_state_train_test_id)
-        seed_everything(random_state_train_test_id)
-        main(args)
+    args = get_parser_args()
+    setattr(args, "model_path", "{}_s{}".format(args.model_path, args.seed))
+    seed_everything(args.seed)
+    main(args)
     

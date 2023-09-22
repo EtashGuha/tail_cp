@@ -13,12 +13,12 @@ import pickle
 import copy
 
 def run_cqr(args):
-    if not args.cqr_no_clipping and os.path.exists("saved_results/{}/cqr.pkl".format(args.dataset_name)) and os.path.exists("saved_results/{}/cqr_predictions.pkl".format(args.dataset_name)):
-        with open("saved_results/{}/cqr.pkl".format(args.dataset_name), "rb") as f:
+    if not args.cqr_no_clipping and os.path.exists("saved_results/{}_{}/cqr.pkl".format(args.dataset_name, args.seed)) and os.path.exists("saved_results/{}_{}/cqr_predictions.pkl".format(args.dataset_name, args.seed)):
+        with open("saved_results/{}_{}/cqr.pkl".format(args.dataset_name, args.seed), "rb") as f:
             coverages, lengths = pickle.load(f)
         return np.mean(coverages), np.std(coverages), np.mean(lengths), np.std(lengths), np.std(coverages)/np.sqrt(len(coverages)), np.std(lengths)/np.sqrt(len(lengths))
-    elif args.cqr_no_clipping and os.path.exists("saved_results/{}/cqr_nc.pkl".format(args.dataset_name)) and os.path.exists("saved_results/{}/cqr_predictions_nc.pkl".format(args.dataset_name)):
-        with open("saved_results/{}/cqr_nc.pkl".format(args.dataset_name), "rb") as f:
+    elif args.cqr_no_clipping and os.path.exists("saved_results/{}_{}/cqr_nc.pkl".format(args.dataset_name, args.seed)) and os.path.exists("saved_results/{}_{}/cqr_predictions_nc.pkl".format(args.dataset_name, args.seed)):
+        with open("saved_results/{}_{}/cqr_nc.pkl".format(args.dataset_name, args.seed), "rb") as f:
             coverages, lengths = pickle.load(f)
         return np.mean(coverages), np.std(coverages), np.mean(lengths), np.std(lengths), np.std(coverages)/np.sqrt(len(coverages)), np.std(lengths)/np.sqrt(len(lengths))
     input_size, range_vals = get_input_and_range(args)
@@ -99,17 +99,17 @@ def run_cqr(args):
 
     
     coverages, lengths = helper.compute_coverage_len_lists(y_val_cqr.squeeze(),cqr_lower_clipped,cqr_upper_clipped)
-    if not os.path.exists("saved_results/{}".format(args.dataset_name)):
-        os.mkdir("saved_results/{}".format(args.dataset_name))
+    if not os.path.exists("saved_results/{}_{}".format(args.dataset_name, args.seed)):
+        os.mkdir("saved_results/{}_{}".format(args.dataset_name, args.seed))
     if not args.cqr_no_clipping:
-        with open("saved_results/{}/cqr.pkl".format(args.dataset_name), "wb") as f:
+        with open("saved_results/{}_{}/cqr.pkl".format(args.dataset_name, args.seed), "wb") as f:
             pickle.dump((coverages, lengths), f)
-        with open("saved_results/{}/cqr_predictions.pkl".format(args.dataset_name), "wb") as f:
+        with open("saved_results/{}_{}/cqr_predictions.pkl".format(args.dataset_name, args.seed), "wb") as f:
             pickle.dump((cqr_lower_clipped, cqr_upper_clipped), f)
     else:
-        with open("saved_results/{}/cqr_nc.pkl".format(args.dataset_name), "wb") as f:
+        with open("saved_results/{}_{}/cqr_nc.pkl".format(args.dataset_name, args.seed), "wb") as f:
             pickle.dump((coverages, lengths), f)
-        with open("saved_results/{}/cqr_predictions_nc.pkl".format(args.dataset_name), "wb") as f:
+        with open("saved_results/{}_{}/cqr_predictions_nc.pkl".format(args.dataset_name, args.seed), "wb") as f:
             pickle.dump((cqr_lower_clipped, cqr_upper_clipped), f)
 
     avg_coverage, std_coverage, avg_length, std_length = helper.compute_coverage(y_val_cqr.squeeze(),cqr_lower_clipped,cqr_upper_clipped,significance,"CQR Net")
