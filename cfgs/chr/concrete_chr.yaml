@@ -1,0 +1,3 @@
+chr: true
+dataset_name: concrete
+model_path: concrete_chr
