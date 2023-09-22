@@ -4,7 +4,7 @@
 cfgs_dir="cfgs"
 
 # List of folder names
-folders=("ridge_baseline" "best" "chr" "cqr" "cqr_no_clip" "lei_baseline" "ridge_baseline" "fong")
+folders=("ridge_baseline" "best" "chr" "cqr" "cqr_no_clip" "lei_baseline" "ridge_baseline" "cb_baseline")
 
 # Specify the range of seeds you want to iterate over
 seed_start=0
