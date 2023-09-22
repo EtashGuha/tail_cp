@@ -133,8 +133,8 @@ def run_cb(X_train, y_train, X_val, y_val, beta_post, intercept_post, sigma_post
     length_cb = np.zeros((rep,n_test))
 
     region_cb = np.zeros((rep,n_test,np.shape(y_plot)[0]))
-    if os.path.exists("saved_results/{}_{}/cb.pkl".format(args.dataset_name)):
-        with open("saved_results/{}_{}/cb.pkl".format(args.dataset_name), "rb") as f:
+    if os.path.exists("saved_results/{}_{}/cb.pkl".format(args.dataset_name, args.seed)):
+        with open("saved_results/{}_{}/cb.pkl".format(args.dataset_name, args.seed), "rb") as f:
             coverage_cb, length_cb = pickle.load(f)
     else:
         for j in tqdm(range(rep)):

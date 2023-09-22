@@ -13,15 +13,6 @@ import warnings
 import pickle
 import copy
 
-def plot(args, i, all_label_scores, range_vals, cutoff):
-    if not os.path.exists("images/{}".format(args.dataset_name)):
-        os.mkdir("images/{}".format(args.dataset_name))
-        os.mkdir("images/{}/lei".format(args.dataset_name))
-    plt.clf()
-    plt.plot(range_vals,all_label_scores)
-    plt.plot([np.min(np.asarray(range_vals)), np.max(np.asarray(range_vals))], [cutoff, cutoff], label=r'Confidence Level $\alpha$')
-    plt.savefig("images/{}/lei/{}.png".format(args.dataset_name, i))
-
 def get_cal_data(X_train, y_train, X_val, y_val):
     h=.1
     cal_scores = []
@@ -45,7 +36,6 @@ def get_cov_len_fast(i, args, range_vals, cal_scores, X_train, y_train, X_val, y
         relative_rank = np.where(sorted_indices == len(all_scores) - 1)[0].item()/(len(all_scores) - 1)
         all_label_scores.append(relative_rank)
         probs.append(new_score)
-    plot(args, i, all_label_scores, range_vals, .1)
     probs = np.asarray(probs)
     probs = probs/np.sum(probs)
     coverage, length = calc_length_coverage(all_label_scores, range_vals, .1, y_val[i].item())
