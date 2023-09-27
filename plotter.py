@@ -106,7 +106,7 @@ def plot_prob(args, range_vals, X_val, y_val, model, baselines=True):
             "font.family": "serif",
             "font.serif": ["Times", "Palatino", "serif"]
         })
-        ax.set_title(label=f"{args.model_path}", y=1.0, pad=28, fontdict={"family": "Times New Roman", "size": 15})
+        # ax.set_title(label=f"{args.model_path}", y=1.0, pad=28, fontdict={"family": "Times New Roman", "size": 15})
         ax.set_xlabel(r'$y$', fontdict={"family": "Times New Roman", "size": 15})
         ax.set_ylabel(r'$\mathbb{P}(y \mid x_{n+1})$', fontdict={"family": "Times New Roman", "size": 15})
         
@@ -119,12 +119,31 @@ def plot_prob(args, range_vals, X_val, y_val, model, baselines=True):
                 y=scores[i].detach().numpy(),
                 label=r'$\mathbb{Q}(y \mid x_{n+1})$',
                 color='black',
-                linewidth=2.3,
-                # marker='o',
-                # markerfacecolor='white',
-                # markeredgecolor='black',
-                # markersize=5        
+                linewidth=2.3    
             )
+            # Plot Lei
+            if lei_probs is not None:
+                sns.lineplot(
+                    ax=ax,
+                    x=range_vals.detach().numpy(),
+                    y=lei_probs,
+                    label='Lei',
+                    color='black',
+                    linewidth=1.5,
+                    linestyle='dotted'
+                )
+                
+            # Plot CHR
+            if chr_probs is not None:
+                sns.lineplot(
+                    ax=ax,
+                    x=range_vals.detach().numpy(),
+                    y=chr_probs,
+                    label='CHR',
+                    color='black',
+                    linestyle='--',
+                    linewidth=1.7
+                )
         else:
             sns.lineplot(
                 ax=ax,
@@ -139,31 +158,7 @@ def plot_prob(args, range_vals, X_val, y_val, model, baselines=True):
                 markersize=5        
             )
 
-        # Plot Lei
-        if lei_probs is not None:
-            sns.lineplot(
-                ax=ax,
-                x=range_vals.detach().numpy(),
-                y=lei_probs,
-                label='Lei',
-                color='black',
-                linewidth=1.5,
-                linestyle='dotted',
-                # marker='.',       
-            )
-            
-        # Plot CHR
-        if chr_probs is not None:
-            sns.lineplot(
-                ax=ax,
-                x=range_vals.detach().numpy(),
-                y=chr_probs,
-                label='CHR',
-                color='black',
-                linestyle='--',
-                linewidth=1.7,
-                # marker='^',       
-            )
+        
         
 
         # if args.dataset_name == "bimodal" or args.dataset_name == "log_normal":
@@ -201,7 +196,7 @@ def plot_prob(args, range_vals, X_val, y_val, model, baselines=True):
                 cqr_lower[i],
                 1.04,
                 'CQR Upper',
-                color=cqr_color,
+                color='grey',
                 ha='center',
                 va='top',
                 size=8,
@@ -213,7 +208,7 @@ def plot_prob(args, range_vals, X_val, y_val, model, baselines=True):
                 cqr_upper[i],
                 1.04,
                 'CQR Upper',
-                color=cqr_color,
+                color='grey',
                 ha='center',
                 va='top',
                 size=8,
