@@ -260,7 +260,7 @@ def plot_violin(args, coverages, lengths):
     cb_lengths_axis_means = [np.mean(cb_lengths[:, i]) for i in range(len(cb_coverages[0]))]
 
     all_coverages = [coverages, lei_coverages, ridge_coverages, cqr_coverages, cqr_nc_coverages, cb_coverages_axis_means]
-    all_lengths = [torch.stack(lengths).detach().numpy(), torch.stack(lei_lengths).detach().numpy(), ridge_lengths, cqr_lengths, cqr_nc_lengths, cb_lengths_axis_means]
+    all_lengths = [torch.stack(lengths).detach().numpy(), torch.stack(lei_lengths).detach().numpy(), np.array(ridge_lengths), cqr_lengths, cqr_nc_lengths, np.array(cb_lengths_axis_means)]
     labels = ["Ours", "Lei", "Ridge", "CQR", "CQR-NC", "CB"]
     line_types = ['solid', 'dotted', '-', '--', 'dashdot', ':']
     line_widths = [2.5, 1.2, 2.2, 2, 1.9, 2]
@@ -286,50 +286,19 @@ def plot_violin(args, coverages, lengths):
     all_length_axes = [ax_lengths_ours, ax_lengths_lei, ax_lengths_ridge, ax_lengths_cqr, ax_lengths_cqr_nc, ax_lengths_cb]
 
     for i in range(len(all_lengths)):
-        sns.kdeplot(
-            x=all_lengths[i],
-            ax=all_length_axes[i],
-            label=labels[i],
-            color='black',
-            linewidth=line_widths[i],
-            linestyle='solid'
-        )
+        if (np.count_nonzero(all_lengths[i] == all_lengths[i][0]) == len(all_lengths[i])):
+            all_length_axes[i].axvline(x=all_lengths[i][0], color='black', linestyle='solid')
+        else:
+            sns.kdeplot(
+                x=all_lengths[i],
+                ax=all_length_axes[i],
+                label=labels[i],
+                color='black',
+                linewidth=line_widths[i],
+                linestyle='solid'
+            )
         all_length_axes[i].set_ylabel(labels[i])
         all_length_axes[i].set_yticks([])
         all_length_axes[i].set_yticklabels([])
-    fig_lengths.suptitle('Length Density KDE')
-    # ax_lengths.set_xlabel('Lengths')
-    # ax_lengths.set_ylabel('Density')
-    # ax_lengths.set_yticks([])
-    # ax_lengths.legend(loc='upper left')
     fig_lengths.savefig("images/{}/kdeplot_coverage.png".format(args.model_path))
-
-    # plt.clf()
-    # sns.set(style="whitegrid")  # Optional styling
-    # plt.figure(figsize=(8, 6))  # Optional figure size
-
-    # # Use the violinplot function to create the plot
-    # sns.violinplot(data=all_coverages, inner="box", palette="Set3")
-
-    # # Set labels and title
-    # plt.xticks(range(len(labels)), labels)
-    # plt.xlabel('Coverages')
-    # plt.ylabel('Values')
-    # plt.legend()
-    # plt.savefig("images/{}/violin_coverage.png".format(args.model_path))
-
-    # plt.clf()
-    # sns.set(style="whitegrid")  # Optional styling
-    # plt.figure(figsize=(8, 6))  # Optional figure size
-
-    # # Use the violinplot function to create the plot
-    # sns.violinplot(data=all_lengths, inner="box", palette="Set3")
-
-    # # Set labels and title
-    # plt.xticks(range(len(labels)), labels)
-    # plt.xlabel('Lengths')
-    # plt.ylabel('Values')
-    # plt.legend()
-    # plt.savefig("images/{}/violin_length.png".format(args.model_path))
-
 
