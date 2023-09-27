@@ -7,7 +7,6 @@ import seaborn as sns
 import pickle
 import numpy as np
 from data import get_train_val_data
-
 from labellines import labelLine, labelLines
 
 def find_rank(value, value_list):
@@ -24,23 +23,7 @@ def calculate_ranks(scores,all_scores):
     ranks = [find_rank(score, all_scores) for score in scores]
     return np.asarray(ranks)/len(all_scores)
 
-
-def set_style():
-    # This sets reasonable defaults for font size for
-    # a figure that will go in a paper
-    sns.set_context("paper")
-    # Set the font to be serif, rather than sans
-    sns.set(font='serif', font_scale=1.5)
-    sns.set_palette('muted')
-    # Make the background white, and specify the
-    # specific font family
-    sns.set_style("whitegrid", {
-        "font.family": "serif",
-        "font.serif": ["Times", "Palatino", "serif"]
-    })
-
 def plot_path(args, range_vals, X_val, y_val, model):
-    # set_style()
     plt.rcParams["mathtext.fontset"] = "cm"
     if not os.path.exists("images/{}".format(args.model_path)):
         os.mkdir("images/{}".format(args.model_path))
@@ -60,55 +43,57 @@ def plot_path(args, range_vals, X_val, y_val, model):
 
         
 def plot_prob(args, range_vals, X_val, y_val, model, baselines=True):
-    # set_style()
+    baseline_path = 'baselines' if baselines else 'no_baselines'
     plt.rcParams["mathtext.fontset"] = "cm"
-    if not os.path.exists("images/{}".format(args.model_path)):
-        os.mkdir("images/{}".format(args.model_path))
-    if not os.path.exists("images/{}".format(args.model_path)):
-        os.mkdir("images/{}".format(args.model_path))
-    if not os.path.exists("images/{}/right".format(args.model_path)):
-        os.mkdir("images/{}/right".format(args.model_path))
-    if not os.path.exists("images/{}/wrong".format(args.model_path)):
-        os.mkdir("images/{}/wrong".format(args.model_path))
-    if not os.path.exists("images/{}/pi".format(args.model_path)):
-        os.mkdir("images/{}/pi".format(args.model_path))
+    if not os.path.exists("images/"):
+        os.mkdir("images/")
+    if not os.path.exists(f"images/{args.model_path}"):
+        os.mkdir(f"images/{args.model_path}")
+    if not os.path.exists(f"images/{args.model_path}/{baseline_path}"):
+        os.mkdir(f"images/{args.model_path}/{baseline_path}")
+    if not os.path.exists(f"images/{args.model_path}/{baseline_path}/right"):
+        os.mkdir(f"images/{args.model_path}/{baseline_path}/right")
+    if not os.path.exists(f"images/{args.model_path}/{baseline_path}/wrong"):
+        os.mkdir(f"images/{args.model_path}/{baseline_path}/wrong")
+    if not os.path.exists(f"images/{args.model_path}/{baseline_path}/pi"):
+        os.mkdir(f"images/{args.model_path}/{baseline_path}/pi")
 
     ## Load Baselines
     cqr_lower = None
     cqr_upper = None
     chr_probs = None
     lei_probs = None
-    if baselines:
-        # Load CQR
-        if os.path.exists(f"saved_results/{args.dataset_name}/cqr_predictions.pkl"):
-            with open(f"saved_results/{args.dataset_name}/cqr_predictions.pkl", "rb") as f:
-                    cqr_lower, cqr_upper = pickle.load(f)
-
-        # Load Lei
-        if os.path.exists(f"saved_results/{args.dataset_name}/lei_probs.pkl"):
-            with open(f"saved_results/{args.dataset_name}/lei_probs.pkl", "rb") as f:
-                    lei_probs = pickle.load(f)[0]
-        
-        # Load CHR
-
-        if os.path.exists(f"saved_results/{args.dataset_name}/chr_probs.pkl"):
-            with open(f"saved_results/{args.dataset_name}/chr_probs.pkl", "rb") as f:
-                    in_probs = pickle.load(f)[0]
-                    subsequence_length = 1000 // len(lei_probs)
-                    reshaped_chr = in_probs.reshape(len(lei_probs), subsequence_length)
-                    chr_probs = np.sum(reshaped_chr, axis=1)
-
     scores, all_scores = get_all_scores(range_vals, X_val, y_val, model)
     alpha = args.alpha
     for i in range(len(X_val[:25])):
-        fig, ax = plt.subplots()
+        if baselines:
+            # Load CQR
+            if os.path.exists(f"saved_results/{args.dataset_name}/cqr_predictions.pkl"):
+                with open(f"saved_results/{args.dataset_name}/cqr_predictions.pkl", "rb") as f:
+                        cqr_lower, cqr_upper = pickle.load(f)
+
+            # Load Lei
+            if os.path.exists(f"saved_results/{args.dataset_name}/lei_probs.pkl"):
+                with open(f"saved_results/{args.dataset_name}/lei_probs.pkl", "rb") as f:
+                        lei_probs = pickle.load(f)[i]
+            
+            # Load CHR
+            if os.path.exists(f"saved_results/{args.dataset_name}/chr_probs.pkl"):
+                with open(f"saved_results/{args.dataset_name}/chr_probs.pkl", "rb") as f:
+                    in_probs = pickle.load(f)[i]
+                    if args.dataset_name == 'solar':
+                        in_probs = np.delete(in_probs, np.arange(9, len(in_probs), 10))
+                    subsequence_length = len(in_probs) // len(lei_probs)
+                    reshaped_chr = in_probs.reshape(len(lei_probs), subsequence_length)
+                    chr_probs = np.sum(reshaped_chr, axis=1)
+        fig, ax = plt.subplots(constrained_layout=True)
         sns.set_style("ticks", {
             "font.family": "serif",
             "font.serif": ["Times", "Palatino", "serif"]
         })
         # ax.set_title(label=f"{args.model_path}", y=1.0, pad=28, fontdict={"family": "Times New Roman", "size": 15})
-        ax.set_xlabel(r'$y$', fontdict={"family": "Times New Roman", "size": 15})
-        ax.set_ylabel(r'$\mathbb{P}(y \mid x_{n+1})$', fontdict={"family": "Times New Roman", "size": 15})
+        ax.set_xlabel(r'$y$', fontdict={"family": "Times New Roman", "size": 20})
+        ax.set_ylabel(r'$\mathbb{P}(y \mid x_{n+1})$', fontdict={"family": "Times New Roman", "size": 20})
         
 
         # Plot Ours
@@ -127,7 +112,7 @@ def plot_prob(args, range_vals, X_val, y_val, model, baselines=True):
                     ax=ax,
                     x=range_vals.detach().numpy(),
                     y=lei_probs,
-                    label='Lei',
+                    label='KDE',
                     color='black',
                     linewidth=1.5,
                     linestyle='dotted'
@@ -158,13 +143,6 @@ def plot_prob(args, range_vals, X_val, y_val, model, baselines=True):
                 markersize=5        
             )
 
-        # if args.dataset_name == "bimodal" or args.dataset_name == "log_normal":
-        #     _, y, _, _ = get_train_val_data(args)
-        #     hist, bins = np.histogram(y, bins=args.range_size)
-        #     # Calculate bin centers
-        #     bin_centers = (bins[:-1] + bins[1:]) / 2
-        #     plt.plot(bin_centers, hist/len(y), label="true distribution")
-
         percentile_val = percentile_excluding_index(all_scores, alpha)
         coverage, length = calc_length_coverage(scores[i], range_vals, percentile_val, y_val[i])
 
@@ -173,59 +151,80 @@ def plot_prob(args, range_vals, X_val, y_val, model, baselines=True):
         ground_truth = ax.axvline(x=y_val[i].detach().numpy(), label=r'Ground Truth $y_{n+1}$', color='#cccccc', zorder=-1)
 
         # Add labels to the lines
-        # graph_max_value = max(map(lambda x: x[3], [scores[i].detach().numpy(), lei_probs, chr_probs]))
-        labelLine(line=confidence_level, zorder=2.5, x=2)
         ax.text(
-            y_val[i].detach().numpy(),
-            1.08,
-            'Ground Truth',
-            color='grey',
-            ha='center',
-            va='top',
-            transform=ax.get_xaxis_transform(),
-            size=8
+            x=1,
+            y=percentile_val.detach().numpy(),
+            s=r'Confidence Level $\alpha$',
+            ha='right',
+            va='bottom',
+            transform=ax.get_yaxis_transform(),
+            size=13,
+            color="grey"
         )
+        if baselines:
+            ax.text(
+                y_val[i].detach().numpy(),
+                1.10,
+                'Ground Truth',
+                color='grey',
+                ha='center',
+                va='top',
+                transform=ax.get_xaxis_transform(),
+                size=12
+            )
+        else:
+            ax.text(
+                y_val[i].detach().numpy(),
+                1.08,
+                'Ground Truth',
+                color='grey',
+                ha='center',
+                va='top',
+                transform=ax.get_xaxis_transform(),
+                size=12
+            )
         # CQR Lower and Upper Predictions
         cqr_color = '#adb5bd'
         if cqr_lower is not None:
             ax.axvline(x=cqr_lower[i], label=r'CQR Lower', color=cqr_color, zorder=-1)
             ax.text(
                 cqr_lower[i],
-                1.04,
+                1.05,
                 'CQR Upper',
                 color='grey',
                 ha='center',
                 va='top',
-                size=8,
+                size=12,
                 transform=ax.get_xaxis_transform()
             )
         if cqr_upper is not None:
             ax.axvline(x=cqr_upper[i], label=r'CQR Upper', color=cqr_color, zorder=-1)
             ax.text(
                 cqr_upper[i],
-                1.04,
+                1.05,
                 'CQR Upper',
                 color='grey',
                 ha='center',
                 va='top',
-                size=8,
+                size=12,
                 transform=ax.get_xaxis_transform()
             )
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
 
         # Specify the lines to include in the legend
-        lines_to_include = [r'$\mathbb{Q}(y \mid x_{n+1})$', 'Lei', 'CHR']
+        lines_to_include = [r'$\mathbb{Q}(y \mid x_{n+1})$', 'KDE', 'CHR']
         
         # Create a custom legend with only the specified lines
         handles, labels = ax.get_legend_handles_labels()
         filtered_handles = [handle for handle, label in zip(handles, labels) if label in lines_to_include]
         filtered_labels = [label for label in labels if label in lines_to_include]
-        ax.legend(filtered_handles, filtered_labels)
+        ax.legend(filtered_handles, filtered_labels, fontsize=14)
+
         if coverage == 1:
-            fig.savefig("images/{}/right/{}.png".format(args.model_path, i))
+            fig.savefig(f"images/{args.model_path}/{baseline_path}/right/{args.dataset_name}_{baseline_path}_{i}.png")
         else:
-            fig.savefig("images/{}/wrong/{}.png".format(args.model_path, i))
+            fig.savefig(f"images/{args.model_path}/{baseline_path}/wrong/{args.dataset_name}_{baseline_path}_{i}.png")
         fig.clf()
 
     for i in range(len(X_val[:25])):
@@ -234,7 +233,8 @@ def plot_prob(args, range_vals, X_val, y_val, model, baselines=True):
         plt.plot(range_vals.detach().numpy(), list_of_ranks)
         plt.xlabel(r'$z$')
         plt.ylabel(r'$\pi(z)$')
-        plt.savefig("images/{}/pi/{}.png".format(args.model_path, i))
+        plt.savefig(f"images/{args.model_path}/{baseline_path}/pi/{i}.png")
+        plt.clf()
 
 def plot_violin(args, coverages, lengths):
     with open("saved_results/{}/lei.pkl".format(args.dataset_name), "rb") as f:
@@ -251,39 +251,25 @@ def plot_violin(args, coverages, lengths):
     
     with open("saved_results/{}/cb.pkl".format(args.dataset_name), "rb") as f:
         cb_coverages, cb_lengths = pickle.load(f)
-    sns.set_style("ticks", {
+
+    with open("saved_results/{}/chr.pkl".format(args.dataset_name), "rb") as f:
+        chr_coverages, chr_lengths = pickle.load(f)
+    
+    sns.set_style("whitegrid", {
         "font.family": "serif",
         "font.serif": ["Times", "Palatino", "serif"]
     })
+    # sns.set_context("talk")
     # Mean cb_coverages
     cb_coverages_axis_means = [np.mean(cb_coverages[:, i]) for i in range(len(cb_coverages[0]))]
     cb_lengths_axis_means = [np.mean(cb_lengths[:, i]) for i in range(len(cb_coverages[0]))]
 
-    all_coverages = [coverages, lei_coverages, ridge_coverages, cqr_coverages, cqr_nc_coverages, cb_coverages_axis_means]
-    all_lengths = [torch.stack(lengths).detach().numpy(), torch.stack(lei_lengths).detach().numpy(), np.array(ridge_lengths), cqr_lengths, cqr_nc_lengths, np.array(cb_lengths_axis_means)]
-    labels = ["Ours", "Lei", "Ridge", "CQR", "CQR-NC", "CB"]
-    line_types = ['solid', 'dotted', '-', '--', 'dashdot', ':']
-    line_widths = [2.5, 1.2, 2.2, 2, 1.9, 2]
-    # fig_coverages, ax_coverages = plt.subplots()
-    # for i in range(len(all_coverages)):
-    #     sns.kdeplot(
-    #         x=all_coverages[i],
-    #         ax=ax_coverages,
-    #         label=labels[i],
-    #         color=sns.color_palette("colorblind")[i],
-    #         linewidth=line_widths[i],
-    #         linestyle=line_types[i]
-    #     )
-    # ax_coverages.set_title('Coverage Density KDE')
-    # ax_coverages.set_xlabel('Coverages')
-    # ax_coverages.set_ylabel('Density')
-    # ax_coverages.set_yticks([])
-    # ax_coverages.legend(loc='upper left')
-    # fig_coverages.tight_layout()
-    # fig_coverages.savefig("images/{}/kdeplot_coverage.png".format(args.model_path))
+    all_coverages = [coverages, lei_coverages, ridge_coverages, cqr_coverages, cqr_nc_coverages, cb_coverages_axis_means, chr_coverages]
+    all_lengths = [torch.stack(lengths).detach().numpy(), torch.stack(lei_lengths).detach().numpy(), np.array(ridge_lengths), cqr_lengths, chr_lengths, np.array(cb_lengths_axis_means)]
+    labels = ["Ours", "KDE", "Lasso", "CQR", "CHR", "CB"]
 
-    fig_lengths, (ax_lengths_ours, ax_lengths_lei, ax_lengths_ridge, ax_lengths_cqr, ax_lengths_cqr_nc, ax_lengths_cb) = plt.subplots(6, sharex=True, constrained_layout=True)
-    all_length_axes = [ax_lengths_ours, ax_lengths_lei, ax_lengths_ridge, ax_lengths_cqr, ax_lengths_cqr_nc, ax_lengths_cb]
+    fig_lengths, (ax_lengths_ours, ax_lengths_lei, ax_lengths_ridge, ax_lengths_cqr, ax_lengths_chr, ax_lengths_cb) = plt.subplots(6, sharex=True, constrained_layout=True)
+    all_length_axes = [ax_lengths_ours, ax_lengths_lei, ax_lengths_ridge, ax_lengths_cqr, ax_lengths_chr, ax_lengths_cb]
 
     for i in range(len(all_lengths)):
         if (np.count_nonzero(all_lengths[i] == all_lengths[i][0]) == len(all_lengths[i])):
@@ -294,13 +280,25 @@ def plot_violin(args, coverages, lengths):
                 ax=all_length_axes[i],
                 label=labels[i],
                 color='black',
-                linewidth=line_widths[i],
+                linewidth=1.7,
                 linestyle='solid'
             )
         all_length_axes[i].set_ylabel(labels[i], fontsize=12)
         all_length_axes[i].set_yticks([])
         all_length_axes[i].set_yticklabels([])
+        all_length_axes[i].spines['top'].set_visible(False)
+        all_length_axes[i].spines['left'].set_visible(False)
+        all_length_axes[i].spines['right'].set_visible(False)
+        all_length_axes[i].spines['bottom'].set_color('#cccccc')
 
     all_length_axes[-1].set_xlabel("Length", fontsize=12)
-    fig_lengths.savefig("images/{}/kdeplot_coverage.png".format(args.model_path))
-
+    all_length_axes[-1].text(0.0, -0.69, 'Best', transform=all_length_axes[-1].transAxes, ha='left', va='bottom', color='#757575')
+    all_length_axes[-1].text(0.99, -0.69, 'Worst', transform=all_length_axes[-1].transAxes, ha='right', va='bottom', color='#757575', backgroundcolor='white', zorder=2)
+    # all_length_axes[-1].text(0.06, -0.82, '←', transform=all_length_axes[-1].transAxes, ha='left', va='bottom', color='#adadad', fontsize=22)
+    # all_length_axes[-1].text(0.91, -0.82, '→', transform=all_length_axes[-1].transAxes, ha='right', va='bottom', color='#adadad', fontsize=22)
+    all_length_axes[-1].annotate('', xy=(0.05, -0.574), xycoords='axes fraction', xytext=(0.44, -0.574), 
+            arrowprops=dict(arrowstyle="->", color='#adadad'))
+    all_length_axes[-1].annotate('', xytext=(0.56, -0.574), xycoords='axes fraction', xy=(0.92, -0.574), 
+            arrowprops=dict(arrowstyle="->", color='#adadad'))
+    fig_lengths.savefig("images/{}/{}_kdeplot_lengths.png".format(args.model_path, args.dataset_name))
+    fig_lengths.clf()
