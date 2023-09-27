@@ -7,6 +7,9 @@ import seaborn as sns
 import pickle
 import numpy as np
 from data import get_train_val_data
+
+from labellines import labelLine, labelLines
+
 def find_rank(value, value_list):
     sorted_list = sorted(value_list)
     rank = 1
@@ -56,8 +59,11 @@ def plot_path(args, range_vals, X_val, y_val, model):
     plt.savefig("images/{}/dcp.png".format(args.model_path))
 
         
-def plot_prob(args, range_vals, X_val, y_val, model):
+def plot_prob(args, range_vals, X_val, y_val, model, baselines=True):
     # set_style()
+    plt.rcParams["mathtext.fontset"] = "cm"
+    if not os.path.exists("images/{}".format(args.model_path)):
+        os.mkdir("images/{}".format(args.model_path))
     if not os.path.exists("images/{}".format(args.model_path)):
         os.mkdir("images/{}".format(args.model_path))
     if not os.path.exists("images/{}/right".format(args.model_path)):
@@ -67,49 +73,71 @@ def plot_prob(args, range_vals, X_val, y_val, model):
     if not os.path.exists("images/{}/pi".format(args.model_path)):
         os.mkdir("images/{}/pi".format(args.model_path))
 
-    ## Load CQR
+    ## Load Baselines
     cqr_lower = None
     cqr_upper = None
-    if os.path.exists(f"saved_results/{args.dataset_name}/cqr_predictions.pkl"):
-        with open(f"saved_results/{args.dataset_name}/cqr_predictions.pkl", "rb") as f:
-                cqr_lower, cqr_upper = pickle.load(f)
-
-    # Load Lei
-    lei_probs = None
-    if os.path.exists(f"saved_results/{args.dataset_name}/lei_probs.pkl"):
-        with open(f"saved_results/{args.dataset_name}/lei_probs.pkl", "rb") as f:
-                lei_probs = pickle.load(f)[0]
-    
-    # Load CHR
     chr_probs = None
-    if os.path.exists(f"saved_results/{args.dataset_name}/chr_probs.pkl"):
-        with open(f"saved_results/{args.dataset_name}/chr_probs.pkl", "rb") as f:
-                in_probs = pickle.load(f)[0]
-                subsequence_length = 1000 // len(lei_probs)
-                reshaped_chr = in_probs.reshape(len(lei_probs), subsequence_length)
-                chr_probs = np.sum(reshaped_chr, axis=1)
+    lei_probs = None
+    if baselines:
+        # Load CQR
+        if os.path.exists(f"saved_results/{args.dataset_name}/cqr_predictions.pkl"):
+            with open(f"saved_results/{args.dataset_name}/cqr_predictions.pkl", "rb") as f:
+                    cqr_lower, cqr_upper = pickle.load(f)
+
+        # Load Lei
+        if os.path.exists(f"saved_results/{args.dataset_name}/lei_probs.pkl"):
+            with open(f"saved_results/{args.dataset_name}/lei_probs.pkl", "rb") as f:
+                    lei_probs = pickle.load(f)[0]
+        
+        # Load CHR
+
+        if os.path.exists(f"saved_results/{args.dataset_name}/chr_probs.pkl"):
+            with open(f"saved_results/{args.dataset_name}/chr_probs.pkl", "rb") as f:
+                    in_probs = pickle.load(f)[0]
+                    subsequence_length = 1000 // len(lei_probs)
+                    reshaped_chr = in_probs.reshape(len(lei_probs), subsequence_length)
+                    chr_probs = np.sum(reshaped_chr, axis=1)
 
     scores, all_scores = get_all_scores(range_vals, X_val, y_val, model)
     alpha = args.alpha
     for i in range(len(X_val[:25])):
         fig, ax = plt.subplots()
-        sns.set_style("whitegrid", {
+        sns.set_style("ticks", {
             "font.family": "serif",
             "font.serif": ["Times", "Palatino", "serif"]
         })
+        ax.set_title(label=f"{args.model_path}", y=1.0, pad=28, fontdict={"family": "Times New Roman", "size": 15})
+        ax.set_xlabel(r'$y$', fontdict={"family": "Times New Roman", "size": 15})
+        ax.set_ylabel(r'$\mathbb{P}(y \mid x_{n+1})$', fontdict={"family": "Times New Roman", "size": 15})
+        
 
-        # Plot CP
-        sns.lineplot(
-            ax=ax,
-            x=range_vals.detach().numpy(),
-            y=scores[i].detach().numpy(),
-            label=r'$\mathbb{Q}(y \mid x_{n+1})$',
-            color='black',
-            linewidth=2.8,
-            marker='o',
-            markerfacecolor='white',
-            markeredgecolor='black'        
-        )
+        # Plot Ours
+        if baselines:
+            sns.lineplot(
+                ax=ax,
+                x=range_vals.detach().numpy(),
+                y=scores[i].detach().numpy(),
+                label=r'$\mathbb{Q}(y \mid x_{n+1})$',
+                color='black',
+                linewidth=2.3,
+                # marker='o',
+                # markerfacecolor='white',
+                # markeredgecolor='black',
+                # markersize=5        
+            )
+        else:
+            sns.lineplot(
+                ax=ax,
+                x=range_vals.detach().numpy(),
+                y=scores[i].detach().numpy(),
+                label=r'$\mathbb{Q}(y \mid x_{n+1})$',
+                color='black',
+                linewidth=2.3,
+                marker='o',
+                markerfacecolor='white',
+                markeredgecolor='black',
+                markersize=5        
+            )
 
         # Plot Lei
         if lei_probs is not None:
@@ -120,7 +148,8 @@ def plot_prob(args, range_vals, X_val, y_val, model):
                 label='Lei',
                 color='black',
                 linewidth=1.5,
-                marker='.',       
+                linestyle='dotted',
+                # marker='.',       
             )
             
         # Plot CHR
@@ -131,11 +160,11 @@ def plot_prob(args, range_vals, X_val, y_val, model):
                 y=chr_probs,
                 label='CHR',
                 color='black',
+                linestyle='--',
                 linewidth=1.7,
-                marker='^',       
+                # marker='^',       
             )
-        ax.set(title=f"{args.model_path}", xlabel=r'$y$', ylabel=r'$\mathbb{P}(y \mid x_{n+1})$')
-
+        
 
         # if args.dataset_name == "bimodal" or args.dataset_name == "log_normal":
         #     _, y, _, _ = get_train_val_data(args)
@@ -146,16 +175,61 @@ def plot_prob(args, range_vals, X_val, y_val, model):
 
         percentile_val = percentile_excluding_index(all_scores, alpha)
         coverage, length = calc_length_coverage(scores[i], range_vals, percentile_val, y_val[i])
-        ax.axhline(y=percentile_val.detach().numpy(), label=r'Confidence Level $\alpha$', color='#a8acb3', linestyle='--')
-        ax.axvline(x=y_val[i].detach().numpy(), label=r'Ground Truth $y_{n+1}$', color='#646566', dashes=[0, 0, 1, 1])
+
+        # Ground Truth and Confidence Level
+        confidence_level = ax.axhline(y=percentile_val.detach().numpy(), label=r'Confidence Level $\alpha$', color='#cccccc', zorder=-1)
+        ground_truth = ax.axvline(x=y_val[i].detach().numpy(), label=r'Ground Truth $y_{n+1}$', color='#cccccc', zorder=-1)
+
+        # Add labels to the lines
+        # graph_max_value = max(map(lambda x: x[3], [scores[i].detach().numpy(), lei_probs, chr_probs]))
+        labelLine(line=confidence_level, zorder=2.5, x=2)
+        ax.text(
+            y_val[i].detach().numpy(),
+            1.08,
+            'Ground Truth',
+            color='grey',
+            ha='center',
+            va='top',
+            transform=ax.get_xaxis_transform(),
+            size=8
+        )
         # CQR Lower and Upper Predictions
+        cqr_color = '#adb5bd'
         if cqr_lower is not None:
-            ax.axvline(x=cqr_lower[i], label=r'CQR Lower', color='#1E88E5', dashes=[0, 0, 1, 2])
+            ax.axvline(x=cqr_lower[i], label=r'CQR Lower', color=cqr_color, zorder=-1)
+            ax.text(
+                cqr_lower[i],
+                1.04,
+                'CQR Upper',
+                color=cqr_color,
+                ha='center',
+                va='top',
+                size=8,
+                transform=ax.get_xaxis_transform()
+            )
         if cqr_upper is not None:
-            ax.axvline(x=cqr_upper[i], label=r'CQR Upper', color='#1E88E5', dashes=[0, 0, 1, 2])
+            ax.axvline(x=cqr_upper[i], label=r'CQR Upper', color=cqr_color, zorder=-1)
+            ax.text(
+                cqr_upper[i],
+                1.04,
+                'CQR Upper',
+                color=cqr_color,
+                ha='center',
+                va='top',
+                size=8,
+                transform=ax.get_xaxis_transform()
+            )
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
-        ax.legend()
+
+        # Specify the lines to include in the legend
+        lines_to_include = [r'$\mathbb{Q}(y \mid x_{n+1})$', 'Lei', 'CHR']
+        
+        # Create a custom legend with only the specified lines
+        handles, labels = ax.get_legend_handles_labels()
+        filtered_handles = [handle for handle, label in zip(handles, labels) if label in lines_to_include]
+        filtered_labels = [label for label in labels if label in lines_to_include]
+        ax.legend(filtered_handles, filtered_labels)
         if coverage == 1:
             fig.savefig("images/{}/right/{}.png".format(args.model_path, i))
         else:
