@@ -158,9 +158,6 @@ def plot_prob(args, range_vals, X_val, y_val, model, baselines=True):
                 markersize=5        
             )
 
-        
-        
-
         # if args.dataset_name == "bimodal" or args.dataset_name == "log_normal":
         #     _, y, _, _ = get_train_val_data(args)
         #     hist, bins = np.histogram(y, bins=args.range_size)
@@ -254,7 +251,10 @@ def plot_violin(args, coverages, lengths):
     
     with open("saved_results/{}/cb.pkl".format(args.dataset_name), "rb") as f:
         cb_coverages, cb_lengths = pickle.load(f)
-
+    sns.set_style("ticks", {
+        "font.family": "serif",
+        "font.serif": ["Times", "Palatino", "serif"]
+    })
     # Mean cb_coverages
     cb_coverages_axis_means = [np.mean(cb_coverages[:, i]) for i in range(len(cb_coverages[0]))]
     cb_lengths_axis_means = [np.mean(cb_lengths[:, i]) for i in range(len(cb_coverages[0]))]
@@ -263,40 +263,45 @@ def plot_violin(args, coverages, lengths):
     all_lengths = [torch.stack(lengths).detach().numpy(), torch.stack(lei_lengths).detach().numpy(), ridge_lengths, cqr_lengths, cqr_nc_lengths, cb_lengths_axis_means]
     labels = ["Ours", "Lei", "Ridge", "CQR", "CQR-NC", "CB"]
     line_types = ['solid', 'dotted', '-', '--', 'dashdot', ':']
-    line_widths = [2.5, 1.2, 1.2, 2, 1.9, 2]
-    fig_coverages, ax_coverages = plt.subplots()
-    for i in range(len(all_coverages)):
-        sns.kdeplot(
-            x=all_coverages[i],
-            ax=ax_coverages,
-            label=labels[i],
-            color=sns.color_palette("colorblind")[i],
-            linewidth=line_widths[i],
-            linestyle=line_types[i]
-        )
-    ax_coverages.set_title('Coverage Density KDE')
-    ax_coverages.set_xlabel('Coverages')
-    ax_coverages.set_ylabel('Density')
-    ax_coverages.set_yticks([])
-    ax_coverages.legend(loc='upper left')
-    fig_coverages.tight_layout()
-    fig_coverages.savefig("images/{}/kdeplot_coverage.png".format(args.model_path))
+    line_widths = [2.5, 1.2, 2.2, 2, 1.9, 2]
+    # fig_coverages, ax_coverages = plt.subplots()
+    # for i in range(len(all_coverages)):
+    #     sns.kdeplot(
+    #         x=all_coverages[i],
+    #         ax=ax_coverages,
+    #         label=labels[i],
+    #         color=sns.color_palette("colorblind")[i],
+    #         linewidth=line_widths[i],
+    #         linestyle=line_types[i]
+    #     )
+    # ax_coverages.set_title('Coverage Density KDE')
+    # ax_coverages.set_xlabel('Coverages')
+    # ax_coverages.set_ylabel('Density')
+    # ax_coverages.set_yticks([])
+    # ax_coverages.legend(loc='upper left')
+    # fig_coverages.tight_layout()
+    # fig_coverages.savefig("images/{}/kdeplot_coverage.png".format(args.model_path))
 
-    fig_lengths, ax_lengths = plt.subplots()
+    fig_lengths, (ax_lengths_ours, ax_lengths_lei, ax_lengths_ridge, ax_lengths_cqr, ax_lengths_cqr_nc, ax_lengths_cb) = plt.subplots(6, sharex=True, constrained_layout=True)
+    all_length_axes = [ax_lengths_ours, ax_lengths_lei, ax_lengths_ridge, ax_lengths_cqr, ax_lengths_cqr_nc, ax_lengths_cb]
+
     for i in range(len(all_lengths)):
         sns.kdeplot(
             x=all_lengths[i],
-            ax=ax_lengths,
+            ax=all_length_axes[i],
             label=labels[i],
-            color=sns.color_palette("colorblind")[i],
+            color='black',
             linewidth=line_widths[i],
-            linestyle=line_types[i]
+            linestyle='solid'
         )
-    ax_lengths.set_title('Length Density KDE')
-    ax_lengths.set_xlabel('Lengths')
-    ax_lengths.set_ylabel('Density')
-    ax_lengths.set_yticks([])
-    ax_lengths.legend(loc='upper left')
+        all_length_axes[i].set_ylabel(labels[i])
+        all_length_axes[i].set_yticks([])
+        all_length_axes[i].set_yticklabels([])
+    fig_lengths.suptitle('Length Density KDE')
+    # ax_lengths.set_xlabel('Lengths')
+    # ax_lengths.set_ylabel('Density')
+    # ax_lengths.set_yticks([])
+    # ax_lengths.legend(loc='upper left')
     fig_lengths.savefig("images/{}/kdeplot_coverage.png".format(args.model_path))
 
     # plt.clf()
