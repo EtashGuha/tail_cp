@@ -297,8 +297,10 @@ def plot_violin(args, coverages, lengths):
                 linewidth=line_widths[i],
                 linestyle='solid'
             )
-        all_length_axes[i].set_ylabel(labels[i])
+        all_length_axes[i].set_ylabel(labels[i], fontsize=12)
         all_length_axes[i].set_yticks([])
         all_length_axes[i].set_yticklabels([])
+
+    all_length_axes[-1].set_xlabel("Length", fontsize=12)
     fig_lengths.savefig("images/{}/kdeplot_coverage.png".format(args.model_path))
 
