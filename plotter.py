@@ -22,14 +22,15 @@ def calculate_ranks(scores,all_scores):
     return np.asarray(ranks)/len(all_scores)
 
 def plot_path(args, range_vals, X_val, y_val, model):
-    pplt.rcParams["mathtext.fontset"] = "cm"
+    plt.rcParams["mathtext.fontset"] = "cm"
     if not os.path.exists("images/{}".format(args.model_path)):
         os.mkdir("images/{}".format(args.model_path))
 
     scores, all_scores = get_all_scores(range_vals, X_val, y_val, model)
     alpha = args.alpha
     fig, ax_path = plt.subplots(figsize=(8, 6))
-    ax_path.set_ylabel('y', fontname='serif', fontsize=16)
+    ax_path.set_ylabel('y', fontname='serif', fontsize=24)
+    ax_path.set_xlabel('x', fontname='serif', fontsize=24)
     not_covered_x = []
     not_covered_y = []
     covered_x = []
@@ -47,7 +48,6 @@ def plot_path(args, range_vals, X_val, y_val, model):
                     y=[interval[0].detach().numpy(),
                     interval[1].detach().numpy()],
                     color="#B7B7B7",
-                    label='Interval Endpoints',
                     s=15
                 )
                 interval_label_added = True
@@ -59,14 +59,25 @@ def plot_path(args, range_vals, X_val, y_val, model):
                 color="#B7B7B7",
                 s=15
             )
-            ax_path.fill_between(
-                x=X_val[i].detach().numpy(),
-                y1=interval[0].detach().numpy(),
-                y2=interval[1].detach().numpy(),
-                color="#B7B7B7",
-                alpha=0.3,
-                linewidth=2
-            )
+            if i == 0:
+                ax_path.fill_between(
+                    x=X_val[i].detach().numpy(),
+                    y1=interval[0].detach().numpy(),
+                    y2=interval[1].detach().numpy(),
+                    color="#B7B7B7",
+                    label='Interval Ranges',
+                    alpha=0.3,
+                    linewidth=2
+                )
+            else:
+                ax_path.fill_between(
+                    x=X_val[i].detach().numpy(),
+                    y1=interval[0].detach().numpy(),
+                    y2=interval[1].detach().numpy(),
+                    color="#B7B7B7",
+                    alpha=0.3,
+                    linewidth=2
+                )
             if y_val[i] >= float(interval[0].detach().numpy()) and y_val[i] <= float(interval[1].detach().numpy()):
                 covered = True
         if (covered):
@@ -90,7 +101,7 @@ def plot_path(args, range_vals, X_val, y_val, model):
         color='white',
         edgecolors='black'
     )
-    ax_path.legend(prop={'family': 'serif', 'size': 12})  # Set the legend font name and size
+    ax_path.legend(prop={'family': 'serif', 'size': 16})  # Set the legend font name and size
     fig.savefig("images/{}/dcp.pdf".format(args.model_path))
 
 
@@ -131,14 +142,6 @@ def plot_prob(args, range_vals, X_val, y_val, model, baselines=True):
                         lei_probs = pickle.load(f)[i]
             
             # Load CHR
-            # if os.path.exists(f"saved_results/{args.dataset_name}/chr_probs.pkl"):
-            #     with open(f"saved_results/{args.dataset_name}/chr_probs.pkl", "rb") as f:
-            #         in_probs = pickle.load(f)[i]
-            #         if args.dataset_name == 'solar':
-            #             in_probs = np.delete(in_probs, np.arange(9, len(in_probs), 10))
-            #         subsequence_length = len(in_probs) // len(lei_probs)
-            #         reshaped_chr = in_probs.reshape(len(lei_probs), subsequence_length)
-            #         chr_probs = np.sum(reshaped_chr, axis=1)
             with open(f"saved_results/{args.dataset_name}/chr_probs.pkl", "rb") as f:
                     chr_probs = pickle.load(f)[i]
                     
@@ -180,15 +183,6 @@ def plot_prob(args, range_vals, X_val, y_val, model, baselines=True):
                 
             # Plot CHR
             if chr_probs is not None:
-                # sns.lineplot(
-                #     ax=ax,
-                #     x=range_vals.detach().numpy(),
-                #     y=chr_probs,
-                #     label='CHR',
-                #     color='black',
-                #     linestyle='--',
-                #     linewidth=1.7
-                # )
                 scaling_factor = 1000/len(range_vals)
                 if 'meps' in args.dataset_name or 'solar' in args.dataset_name or 'forest' in args.dataset_name:
                     scaling_factor = 1
@@ -388,8 +382,6 @@ def plot_violin(args, coverages, lengths):
     all_length_axes[-1].set_xlabel("Length", fontsize=12)
     all_length_axes[-1].text(0.0, -0.69, 'Best', transform=all_length_axes[-1].transAxes, ha='left', va='bottom', color='#757575')
     all_length_axes[-1].text(0.99, -0.69, 'Worst', transform=all_length_axes[-1].transAxes, ha='right', va='bottom', color='#757575', backgroundcolor='white', zorder=2)
-    # all_length_axes[-1].text(0.06, -0.82, '←', transform=all_length_axes[-1].transAxes, ha='left', va='bottom', color='#adadad', fontsize=22)
-    # all_length_axes[-1].text(0.91, -0.82, '→', transform=all_length_axes[-1].transAxes, ha='right', va='bottom', color='#adadad', fontsize=22)
     all_length_axes[-1].annotate('', xy=(0.05, -0.574), xycoords='axes fraction', xytext=(0.44, -0.574), 
             arrowprops=dict(arrowstyle="->", color='#adadad'))
     all_length_axes[-1].annotate('', xytext=(0.56, -0.574), xycoords='axes fraction', xy=(0.92, -0.574), 
