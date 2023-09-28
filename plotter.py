@@ -78,33 +78,40 @@ def plot_prob(args, range_vals, X_val, y_val, model, baselines=True):
                         lei_probs = pickle.load(f)[i]
             
             # Load CHR
-            if os.path.exists(f"saved_results/{args.dataset_name}/chr_probs.pkl"):
-                with open(f"saved_results/{args.dataset_name}/chr_probs.pkl", "rb") as f:
-                    in_probs = pickle.load(f)[i]
-                    if args.dataset_name == 'solar':
-                        in_probs = np.delete(in_probs, np.arange(9, len(in_probs), 10))
-                    subsequence_length = len(in_probs) // len(lei_probs)
-                    reshaped_chr = in_probs.reshape(len(lei_probs), subsequence_length)
-                    chr_probs = np.sum(reshaped_chr, axis=1)
+            # if os.path.exists(f"saved_results/{args.dataset_name}/chr_probs.pkl"):
+            #     with open(f"saved_results/{args.dataset_name}/chr_probs.pkl", "rb") as f:
+            #         in_probs = pickle.load(f)[i]
+            #         if args.dataset_name == 'solar':
+            #             in_probs = np.delete(in_probs, np.arange(9, len(in_probs), 10))
+            #         subsequence_length = len(in_probs) // len(lei_probs)
+            #         reshaped_chr = in_probs.reshape(len(lei_probs), subsequence_length)
+            #         chr_probs = np.sum(reshaped_chr, axis=1)
+            with open(f"saved_results/{args.dataset_name}/chr_probs.pkl", "rb") as f:
+                    chr_probs = pickle.load(f)[i]
+                    
         fig, ax = plt.subplots(constrained_layout=True)
         sns.set_style("ticks", {
             "font.family": "serif",
             "font.serif": ["Times", "Palatino", "serif"]
         })
         # ax.set_title(label=f"{args.model_path}", y=1.0, pad=28, fontdict={"family": "Times New Roman", "size": 15})
-        ax.set_xlabel(r'$y$', fontdict={"family": "Times New Roman", "size": 20})
-        ax.set_ylabel(r'$\mathbb{P}(y \mid x_{n+1})$', fontdict={"family": "Times New Roman", "size": 20})
-        
-
-        # Plot Ours
         if baselines:
+            ax.set_xlabel(r'$y$', fontdict={"family": "Times New Roman", "size": 20})
+            ax.set_ylabel(r'$\mathbb{P}(y \mid x_{n+1})$', fontdict={"family": "Times New Roman", "size": 20})
+        else:
+            ax.set_xlabel(r'$y$', fontdict={"family": "Times New Roman", "size": 36})
+            ax.set_ylabel(r'$\mathbb{P}(y \mid x_{n+1})$', fontdict={"family": "Times New Roman", "size": 36})  
+
+        if baselines:
+            # Plot Ours With Baselines
             sns.lineplot(
                 ax=ax,
                 x=range_vals.detach().numpy(),
                 y=scores[i].detach().numpy(),
                 label=r'$\mathbb{Q}(y \mid x_{n+1})$',
+                linestyle='solid',
                 color='black',
-                linewidth=2.3    
+                linewidth=2.4,
             )
             # Plot Lei
             if lei_probs is not None:
@@ -114,22 +121,38 @@ def plot_prob(args, range_vals, X_val, y_val, model, baselines=True):
                     y=lei_probs,
                     label='KDE',
                     color='black',
-                    linewidth=1.5,
+                    linewidth=1.9,
                     linestyle='dotted'
                 )
                 
             # Plot CHR
             if chr_probs is not None:
+                # sns.lineplot(
+                #     ax=ax,
+                #     x=range_vals.detach().numpy(),
+                #     y=chr_probs,
+                #     label='CHR',
+                #     color='black',
+                #     linestyle='--',
+                #     linewidth=1.7
+                # )
+                scaling_factor = 1000/len(range_vals)
+                if 'meps' in args.dataset_name or 'solar' in args.dataset_name or 'forest' in args.dataset_name:
+                    scaling_factor = 1
+                if 'bimodal' in args.dataset_name:
+                    scaling_factor = 20.0
+
                 sns.lineplot(
                     ax=ax,
-                    x=range_vals.detach().numpy(),
-                    y=chr_probs,
+                    x= np.linspace(np.min(range_vals.detach().numpy()), np.max(range_vals.detach().numpy()), 1000),
+                    y=chr_probs * scaling_factor,
                     label='CHR',
                     color='black',
-                    linestyle='--',
-                    linewidth=1.7
+                    linestyle='solid',
+                    linewidth=0.65
                 )
         else:
+            # Plot Ours without Baselines
             sns.lineplot(
                 ax=ax,
                 x=range_vals.detach().numpy(),
@@ -137,6 +160,7 @@ def plot_prob(args, range_vals, X_val, y_val, model, baselines=True):
                 label=r'$\mathbb{Q}(y \mid x_{n+1})$',
                 color='black',
                 linewidth=2.3,
+                linestyle='solid',
                 marker='o',
                 markerfacecolor='white',
                 markeredgecolor='black',
@@ -151,16 +175,7 @@ def plot_prob(args, range_vals, X_val, y_val, model, baselines=True):
         ground_truth = ax.axvline(x=y_val[i].detach().numpy(), label=r'Ground Truth $y_{n+1}$', color='#cccccc', zorder=-1)
 
         # Add labels to the lines
-        ax.text(
-            x=1,
-            y=percentile_val.detach().numpy(),
-            s=r'Confidence Level $\alpha$',
-            ha='right',
-            va='bottom',
-            transform=ax.get_yaxis_transform(),
-            size=13,
-            color="grey"
-        )
+        
         if baselines:
             ax.text(
                 y_val[i].detach().numpy(),
@@ -172,16 +187,38 @@ def plot_prob(args, range_vals, X_val, y_val, model, baselines=True):
                 transform=ax.get_xaxis_transform(),
                 size=12
             )
+            ax.text(
+                x=1.02,
+                y=percentile_val.detach().numpy(),
+                s=r'Confidence' '\n' r'    Level $\alpha$',
+                ha='left',
+                va='center',
+                transform=ax.get_yaxis_transform(),
+                rotation=270,
+                size=13,
+                color="grey"
+            )
         else:
             ax.text(
                 y_val[i].detach().numpy(),
-                1.08,
+                1.10,
                 'Ground Truth',
                 color='grey',
                 ha='center',
                 va='top',
                 transform=ax.get_xaxis_transform(),
-                size=12
+                size=24
+            )
+            ax.text(
+                x=1.02,
+                y=percentile_val.detach().numpy(),
+                s=r'Confidence' '\n' r'    Level $\alpha$',
+                ha='left',
+                va='center',
+                transform=ax.get_yaxis_transform(),
+                rotation=270,
+                size=24,
+                color="grey"
             )
         # CQR Lower and Upper Predictions
         cqr_color = '#adb5bd'
@@ -219,7 +256,10 @@ def plot_prob(args, range_vals, X_val, y_val, model, baselines=True):
         handles, labels = ax.get_legend_handles_labels()
         filtered_handles = [handle for handle, label in zip(handles, labels) if label in lines_to_include]
         filtered_labels = [label for label in labels if label in lines_to_include]
-        ax.legend(filtered_handles, filtered_labels, fontsize=14)
+        if baselines:
+            ax.legend(filtered_handles, filtered_labels, fontsize=14)
+        else:
+            ax.legend(filtered_handles, filtered_labels, fontsize=20)
 
         if coverage == 1:
             fig.savefig(f"images/{args.model_path}/{baseline_path}/right/{args.dataset_name}_{baseline_path}_{i}.pdf")
