@@ -39,7 +39,7 @@ def plot_path(args, range_vals, X_val, y_val, model):
         for interval in intervals:
             plt.scatter([X_val[i].detach().numpy(), X_val[i].detach().numpy()], [interval[0].detach().numpy(), interval[1].detach().numpy()], color="orange")
     plt.legend()
-    plt.savefig("images/{}/dcp.png".format(args.model_path))
+    plt.savefig("images/{}/dcp.pdf".format(args.model_path))
 
         
 def plot_prob(args, range_vals, X_val, y_val, model, baselines=True):
@@ -190,7 +190,7 @@ def plot_prob(args, range_vals, X_val, y_val, model, baselines=True):
             ax.text(
                 cqr_lower[i],
                 1.05,
-                'CQR Upper',
+                'CQR Lower',
                 color='grey',
                 ha='center',
                 va='top',
@@ -222,9 +222,9 @@ def plot_prob(args, range_vals, X_val, y_val, model, baselines=True):
         ax.legend(filtered_handles, filtered_labels, fontsize=14)
 
         if coverage == 1:
-            fig.savefig(f"images/{args.model_path}/{baseline_path}/right/{args.dataset_name}_{baseline_path}_{i}.png")
+            fig.savefig(f"images/{args.model_path}/{baseline_path}/right/{args.dataset_name}_{baseline_path}_{i}.pdf")
         else:
-            fig.savefig(f"images/{args.model_path}/{baseline_path}/wrong/{args.dataset_name}_{baseline_path}_{i}.png")
+            fig.savefig(f"images/{args.model_path}/{baseline_path}/wrong/{args.dataset_name}_{baseline_path}_{i}.pdf")
         fig.clf()
 
     for i in range(len(X_val[:25])):
@@ -233,7 +233,7 @@ def plot_prob(args, range_vals, X_val, y_val, model, baselines=True):
         plt.plot(range_vals.detach().numpy(), list_of_ranks)
         plt.xlabel(r'$z$')
         plt.ylabel(r'$\pi(z)$')
-        plt.savefig(f"images/{args.model_path}/{baseline_path}/pi/{i}.png")
+        plt.savefig(f"images/{args.model_path}/{baseline_path}/pi/{i}.pdf")
         plt.clf()
 
 def plot_violin(args, coverages, lengths):
@@ -281,7 +281,8 @@ def plot_violin(args, coverages, lengths):
                 label=labels[i],
                 color='black',
                 linewidth=1.7,
-                linestyle='solid'
+                linestyle='solid',
+                clip=(0, None)
             )
         all_length_axes[i].set_ylabel(labels[i], fontsize=12)
         all_length_axes[i].set_yticks([])
@@ -300,5 +301,5 @@ def plot_violin(args, coverages, lengths):
             arrowprops=dict(arrowstyle="->", color='#adadad'))
     all_length_axes[-1].annotate('', xytext=(0.56, -0.574), xycoords='axes fraction', xy=(0.92, -0.574), 
             arrowprops=dict(arrowstyle="->", color='#adadad'))
-    fig_lengths.savefig("images/{}/{}_kdeplot_lengths.png".format(args.model_path, args.dataset_name))
+    fig_lengths.savefig("images/{}/{}_kdeplot_lengths.pdf".format(args.model_path, args.dataset_name))
     fig_lengths.clf()
