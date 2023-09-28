@@ -52,11 +52,14 @@ def get_parser_args():
     parser.add_argument('--batch_size', type=int, default=32, help='Name of the model') 
     parser.add_argument('--bias', type=bool, default=True, help='Name of the model')
     parser.add_argument('--max_epochs', type=int, default=1000, help='Name of the model')
+    parser.add_argument('--seed', type=int, default=0, help='Name of the model')
+
     parser.add_argument('--test_size', type=float, default=.2, help='Name of the model')
     parser.add_argument('--model_path', type=str, help='Name of the model')
     parser.add_argument('--ablation_name', type=str, help='Name of the model')
     parser.add_argument('--ablation_parameter', type=str, help='Name of the model')
     parser.add_argument('--ablation_values', type=parse_float_list, help='Name of the model')
+    
 
 
     parser.add_argument('--optimizer', type=str, default="adam", help='Name of the model')

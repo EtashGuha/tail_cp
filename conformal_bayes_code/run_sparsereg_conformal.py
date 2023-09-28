@@ -19,7 +19,7 @@ def get_posterior(args, X_train, y_train):
     intercept_post = None
     b_post = None
     sigma_post = None
-    folder_path = f"conformal_bayes_code/{args.dataset_name}/post_samples"
+    folder_path = f"conformal_bayes_code/{args.dataset_name}_{args.seed}/post_samples"
     if os.path.exists(folder_path):
         beta_post = jnp.load(f"{folder_path}/beta_post.npy")
         intercept_post = jnp.load(f"{folder_path}/intercept_post.npy")
@@ -27,10 +27,10 @@ def get_posterior(args, X_train, y_train):
         sigma_post = jnp.load(f"{folder_path}/sigma_post.npy")
     else:
         beta_post, intercept_post, b_post, sigma_post = fit_mcmc_laplace(X_train, y_train, args)
-        if not os.path.exists("conformal_bayes_code/{}".format(args.dataset_name)):
-            os.mkdir("conformal_bayes_code/{}".format(args.dataset_name))
-            os.mkdir("conformal_bayes_code/{}/post_samples".format(args.dataset_name))
-        total_save_path = "conformal_bayes_code/{}/post_samples".format(args.dataset_name)
+        if not os.path.exists("conformal_bayes_code/{}_{}".format(args.dataset_name, args.seed)):
+            os.mkdir("conformal_bayes_code/{}_{}".format(args.dataset_name, args.seed))
+            os.mkdir("conformal_bayes_code/{}_{}/post_samples".format(args.dataset_name, args.seed))
+        total_save_path = "conformal_bayes_code/{}_{}/post_samples".format(args.dataset_name, args.seed)
         np.save(f"{total_save_path}/beta_post", beta_post)
         np.save(f"{total_save_path}/intercept_post", intercept_post)
         np.save(f"{total_save_path}/b_post", b_post)
@@ -133,8 +133,8 @@ def run_cb(X_train, y_train, X_val, y_val, beta_post, intercept_post, sigma_post
     length_cb = np.zeros((rep,n_test))
 
     region_cb = np.zeros((rep,n_test,np.shape(y_plot)[0]))
-    if os.path.exists("saved_results/{}/cb.pkl".format(args.dataset_name)):
-        with open("saved_results/{}/cb.pkl".format(args.dataset_name), "rb") as f:
+    if os.path.exists("saved_results/{}_{}/cb.pkl".format(args.dataset_name, args.seed)):
+        with open("saved_results/{}_{}/cb.pkl".format(args.dataset_name, args.seed), "rb") as f:
             coverage_cb, length_cb = pickle.load(f)
     else:
         for j in tqdm(range(rep)):
@@ -158,9 +158,9 @@ def run_cb(X_train, y_train, X_val, y_val, beta_post, intercept_post, sigma_post
                 coverage_cb_exact[j,i] = compute_cb_region_IS(alpha,logp_samp_n,logwjk_test[:,:,i]) #exact coverage
 
         print("---- RESULTS -----")
-        if not os.path.exists("saved_results/{}".format(args.dataset_name)):
-            os.mkdir("saved_results/{}".format(args.dataset_name))
-        with open("saved_results/{}/cb.pkl".format(args.dataset_name), "wb") as f:
+        if not os.path.exists("saved_results/{}_{}".format(args.dataset_name, args.seed)):
+            os.mkdir("saved_results/{}_{}".format(args.dataset_name, args.seed))
+        with open("saved_results/{}_{}/cb.pkl".format(args.dataset_name, args.seed), "wb") as f:
             pickle.dump((coverage_cb_exact, length_cb), f)
     mean_coverage = np.mean(coverage_cb_exact)
     std_coverage = np.std(coverage_cb_exact)

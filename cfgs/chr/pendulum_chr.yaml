@@ -1,0 +1,3 @@
+chr: true
+dataset_name: pendulum
+model_path: pendulum_chr

@@ -1,7 +1,7 @@
 batch_size: 32
 constraint_weights: 1, 5
 dataset_name: log_normal
-devices: 1
+devices: 0
 ffn_activation: relu
 ffn_hidden_dim: 1000
 ffn_num_layers: 4
