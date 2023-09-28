@@ -6,8 +6,6 @@ from cp import calc_length_coverage, find_intervals_above_value_with_interpolati
 import seaborn as sns
 import pickle
 import numpy as np
-from data import get_train_val_data
-from labellines import labelLine, labelLines
 
 def find_rank(value, value_list):
     sorted_list = sorted(value_list)
@@ -24,22 +22,77 @@ def calculate_ranks(scores,all_scores):
     return np.asarray(ranks)/len(all_scores)
 
 def plot_path(args, range_vals, X_val, y_val, model):
-    plt.rcParams["mathtext.fontset"] = "cm"
+    pplt.rcParams["mathtext.fontset"] = "cm"
     if not os.path.exists("images/{}".format(args.model_path)):
         os.mkdir("images/{}".format(args.model_path))
-    
+
     scores, all_scores = get_all_scores(range_vals, X_val, y_val, model)
-
     alpha = args.alpha
-
-    plt.scatter(X_val.detach().numpy(), y_val.detach().numpy(), label=r'(x_i, y_i)')
+    fig, ax_path = plt.subplots(figsize=(8, 6))
+    ax_path.set_ylabel('y', fontname='serif', fontsize=16)
+    not_covered_x = []
+    not_covered_y = []
+    covered_x = []
+    covered_y = []
+    interval_label_added = False
     for i in range(len(X_val)):
+        covered = False
         percentile_val = percentile_excluding_index(all_scores, alpha)
         intervals = find_intervals_above_value_with_interpolation(range_vals, scores[i], percentile_val)
         for interval in intervals:
-            plt.scatter([X_val[i].detach().numpy(), X_val[i].detach().numpy()], [interval[0].detach().numpy(), interval[1].detach().numpy()], color="orange")
-    plt.legend()
-    plt.savefig("images/{}/dcp.pdf".format(args.model_path))
+            if not interval_label_added:
+                ax_path.scatter(
+                    x=[X_val[i].detach().numpy(),
+                    X_val[i].detach().numpy()],
+                    y=[interval[0].detach().numpy(),
+                    interval[1].detach().numpy()],
+                    color="#B7B7B7",
+                    label='Interval Endpoints',
+                    s=15
+                )
+                interval_label_added = True
+            ax_path.scatter(
+                x=[X_val[i].detach().numpy(),
+                X_val[i].detach().numpy()],
+                y=[interval[0].detach().numpy(),
+                interval[1].detach().numpy()],
+                color="#B7B7B7",
+                s=15
+            )
+            ax_path.fill_between(
+                x=X_val[i].detach().numpy(),
+                y1=interval[0].detach().numpy(),
+                y2=interval[1].detach().numpy(),
+                color="#B7B7B7",
+                alpha=0.3,
+                linewidth=2
+            )
+            if y_val[i] >= float(interval[0].detach().numpy()) and y_val[i] <= float(interval[1].detach().numpy()):
+                covered = True
+        if (covered):
+            covered_x.append(float(X_val[i].detach().numpy()))
+            covered_y.append(float(y_val[i].detach().numpy()))
+        else:
+            not_covered_x.append(float(X_val[i].detach().numpy()))
+            not_covered_y.append(float(y_val[i].detach().numpy()))   
+        
+    ax_path.scatter(
+        covered_x,
+        covered_y,
+        label=r'$(x_i, y_i)$ Covered',
+        color='black',
+        s=20
+    )
+    ax_path.scatter(
+        not_covered_x,
+        not_covered_y,
+        label=r'$(x_i, y_i)$ Not Covered',
+        color='white',
+        edgecolors='black'
+    )
+    ax_path.legend(prop={'family': 'serif', 'size': 12})  # Set the legend font name and size
+    fig.savefig("images/{}/dcp.pdf".format(args.model_path))
+
 
         
 def plot_prob(args, range_vals, X_val, y_val, model, baselines=True):
