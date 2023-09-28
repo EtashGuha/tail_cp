@@ -33,7 +33,7 @@ for x in x_values:
     y_values.append(weight * one_y + (1-weight) * two_y)
 
 plt.scatter(x_values, y_values)
-plt.savefig("foretash.png")
+plt.savefig("sample_lei.png")
 breakpoint()
 with open("datasets/lei.pkl", "wb") as f:
     pickle.dump((np.expand_dims(x_values, axis=1), np.asarray(y_values)), f)
