@@ -70,7 +70,7 @@ def get_parser_args():
     parser.add_argument('--lr', type=float, default=1e-3, help='Number of moments')
     parser.add_argument('--devices', default=-1, help="Input can be an int or a list of ints")
     parser.add_argument('--constraint_weights', type=parse_float_list, help='List of constraint weights')
-    parser.add_argument('--num_workers', type=int, default=os.cpu_count())
+    parser.add_argument('--num_workers', type=int, default=4)
     
     args = parser.parse_args()
 

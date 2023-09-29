@@ -14,7 +14,7 @@ seed_end=5  # Change this to the desired end seed
 for folder in "${folders[@]}"; do
     # Get a list of all YAML files in the folder
     echo "$cfgs_dir/$folder"
-    yaml_files=($(find "/home/etashguha/tail_cp/cfgs/$folder" -name "*.yaml"))
+    yaml_files=($(find "cfgs/$folder" -name "*.yaml"))
 
     # Loop through each YAML file
     for yaml_file in "${yaml_files[@]}"; do

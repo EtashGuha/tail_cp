@@ -15,10 +15,6 @@ import os
 import pickle
 
 def get_posterior(args, X_train, y_train):
-    beta_post = None
-    intercept_post = None
-    b_post = None
-    sigma_post = None
     folder_path = f"conformal_bayes_code/{args.dataset_name}_{args.seed}/post_samples"
     if os.path.exists(folder_path):
         beta_post = jnp.load(f"{folder_path}/beta_post.npy")
@@ -114,29 +110,32 @@ def fit_mcmc_laplace(X_train,y_train, args):
     return beta_post,intercept_post,b_post,sigma_post
 
 #Main run function for sparse regression
-def run_cb(X_train, y_train, X_val, y_val, beta_post, intercept_post, sigma_post, args):
-    # there's gotta be some sort of model path thing for the posterior distributions if we want to save them
-    X_train = np.array(X_train)
-    y_train = np.array(y_train)
-    X_val = np.array(X_val)
-    y_val = np.array(y_val)
-    y_plot = np.linspace(np.min(y_train) - 2, np.max(y_train) + 2,100) # not entirely sure what this is for
-
-    #Initialize
-    alpha = 0.1
-    rep = np.shape(beta_post)[0]
-    n_test = np.shape(X_val)[0]
-
-    coverage_cb = np.zeros((rep,n_test))
-    coverage_cb_exact = np.zeros((rep,n_test)) #avoiding grid effects
-
-    length_cb = np.zeros((rep,n_test))
-
-    region_cb = np.zeros((rep,n_test,np.shape(y_plot)[0]))
+def run_cb(X_train, y_train, X_val, y_val, args):
     if os.path.exists("saved_results/{}_{}/cb.pkl".format(args.dataset_name, args.seed)):
         with open("saved_results/{}_{}/cb.pkl".format(args.dataset_name, args.seed), "rb") as f:
-            coverage_cb, length_cb = pickle.load(f)
+            coverage_cb_exact, length_cb = pickle.load(f)
     else:
+        beta_post, intercept_post, b_post, sigma_post = get_posterior(args, X_train, y_train)
+        # there's gotta be some sort of model path thing for the posterior distributions if we want to save them
+        X_train = np.array(X_train)
+        y_train = np.array(y_train)
+        X_val = np.array(X_val)
+        y_val = np.array(y_val)
+        y_plot = np.linspace(np.min(y_train) - 2, np.max(y_train) + 2,100) # not entirely sure what this is for
+
+        #Initialize
+        alpha = 0.1
+        rep = np.shape(beta_post)[0]
+        n_test = np.shape(X_val)[0]
+
+        coverage_cb = np.zeros((rep,n_test))
+        coverage_cb_exact = np.zeros((rep,n_test)) #avoiding grid effects
+
+        length_cb = np.zeros((rep,n_test))
+
+        region_cb = np.zeros((rep,n_test,np.shape(y_plot)[0]))
+
+        
         for j in tqdm(range(rep)):
             dy = y_plot[1] - y_plot[0]
 

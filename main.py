@@ -59,8 +59,7 @@ def main(args):
     if args.chr:
         mean_coverage, std_coverage, mean_length, std_length, coverage_ce, length_ce = get_chr(args)
     elif args.cb:
-        beta_post, intercept_post, b_post, sigma_post = get_posterior(args, X_train, y_train)
-        mean_coverage, std_coverage, mean_length, std_length, coverage_ce, length_ce = run_cb(X_train, y_train, X_val, y_val, beta_post, intercept_post, sigma_post, args)
+        mean_coverage, std_coverage, mean_length, std_length, coverage_ce, length_ce = run_cb(X_train, y_train, X_val, y_val, args)
     elif args.cqr:
         mean_coverage, std_coverage, mean_length, std_length, coverage_ce, length_ce = run_cqr(args)
     elif args.lei:
@@ -76,9 +75,9 @@ def main(args):
         model = get_model(args) 
         coverages, lengths = get_cp_lists(args, range_vals, X_val, y_val, model)
         mean_coverage, std_coverage, mean_length, std_length, coverage_ce, length_ce = get_cp(args, range_vals,  X_val, y_val, model)
-        plot_prob(args, range_vals, X_val, y_val, model)
-        plot_violin(args, coverages, lengths)
-        log_results((args.dataset_name, args.model_path, mean_coverage, std_coverage, mean_length, std_length, coverage_ce, length_ce, args.seed))
+        # plot_prob(args, range_vals, X_val, y_val, model)
+        # plot_violin(args, coverages, lengths)
+        # log_results((args.dataset_name, args.model_path, mean_coverage, std_coverage, mean_length, std_length, coverage_ce, length_ce, args.seed))
        
     return mean_coverage, std_coverage, mean_length, std_length
 
