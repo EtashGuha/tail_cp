@@ -1,7 +1,7 @@
 model: mlp
 model_path: community_ne
 dataset_name: community
-loss_type: thomas_lq
+loss_type: special_lq
 range_size: 50
 batch_size: 32
 devices: 1

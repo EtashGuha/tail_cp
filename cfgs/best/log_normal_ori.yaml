@@ -5,7 +5,7 @@ devices: 0
 ffn_activation: relu
 ffn_hidden_dim: 1000
 ffn_num_layers: 4
-loss_type: thomas_lq
+loss_type: special_lq
 lq_norm_val: 0.5
 lr: 0.0001
 max_epochs: 3000

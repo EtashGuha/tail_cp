@@ -1,7 +1,7 @@
 model: mlp
 model_path: lei_2
 dataset_name: lei
-loss_type: thomas_lq
+loss_type: special_lq
 range_size: 100
 batch_size: 16
 devices: 1

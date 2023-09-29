@@ -64,9 +64,9 @@ class GenModule(pl.LightningModule):
         if self.loss_type == "moment":
             for moment_index in range(self.K):
                 all_losses.append(torch.sum(torch.square(torch.sum(probs * torch.pow(self.range_vals, moment_index + 1), axis=1) - torch.pow(y, moment_index+1))))
-        elif self.loss_type == "thomas":
+        elif self.loss_type == "special":
             all_losses.append(torch.sum(probs * torch.square(self.range_vals.view(1, -1).expand(len(y), -1) - y.view(-1, 1)))) 
-        elif self.loss_type == "thomas_lq":
+        elif self.loss_type == "special_lq":
             all_losses.append(torch.sum(probs * torch.pow(torch.abs(self.range_vals.view(1, -1).expand(len(y), -1) - y.view(-1, 1)), self.q)) )
         elif self.loss_type == "simplest":
             step_val = (max(self.range_vals) - min(self.range_vals))/(len(self.range_vals) - 1)
