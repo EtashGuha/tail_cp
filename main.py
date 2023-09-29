@@ -75,10 +75,14 @@ def main(args):
         model = get_model(args) 
         coverages, lengths = get_cp_lists(args, range_vals, X_val, y_val, model)
         mean_coverage, std_coverage, mean_length, std_length, coverage_ce, length_ce = get_cp(args, range_vals,  X_val, y_val, model)
+        
         # plot_prob(args, range_vals, X_val, y_val, model)
         # plot_violin(args, coverages, lengths)
         # log_results((args.dataset_name, args.model_path, mean_coverage, std_coverage, mean_length, std_length, coverage_ce, length_ce, args.seed))
-       
+    print(f"Results for Seed: {args.seed}")
+    print(f"Coverage: {mean_coverage} ± {coverage_ce}")
+    print(f"Length: {mean_length} ± {coverage_ce}")
+
     return mean_coverage, std_coverage, mean_length, std_length
 
 if __name__ == '__main__':
