@@ -1,0 +1,15 @@
+model: mlp
+model_path: blog_reverse
+dataset_name: blog
+loss_type: reverse
+range_size: 50
+batch_size: 32
+devices: 0
+lr: 1e-9
+ffn_activation: relu
+ffn_hidden_dim: 1000
+ffn_num_layers: 4
+constraint_weights: 1, 5
+max_epochs: 3000
+lq_norm_val: .5
+weight_decay: 1e-4

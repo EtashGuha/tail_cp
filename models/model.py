@@ -68,6 +68,13 @@ class GenModule(pl.LightningModule):
             all_losses.append(torch.sum(probs * torch.square(self.range_vals.view(1, -1).expand(len(y), -1) - y.view(-1, 1)))) 
         elif self.loss_type == "special_lq":
             all_losses.append(torch.sum(probs * torch.pow(torch.abs(self.range_vals.view(1, -1).expand(len(y), -1) - y.view(-1, 1)), self.q)) )
+        elif self.loss_type == "reverse":
+            before_soft_labels = torch.pow(torch.abs(self.range_vals.view(1, -1).expand(len(y), -1) - y.view(-1, 1)), self.q)
+            soft_labels = torch.exp(-1/self.constraint_weights[1] * before_soft_labels)
+            soft_labels = soft_labels/torch.sum(soft_labels, axis = 1, keepdim=True)
+            loss_fn = torch.nn.KLDivLoss()
+            loss = loss_fn(probs, soft_labels)
+            return loss
         elif self.loss_type == "simplest":
             step_val = (max(self.range_vals) - min(self.range_vals))/(len(self.range_vals) - 1)
             indeces = torch.round((y - min(self.range_vals))/step_val)
