@@ -1,4 +1,4 @@
-To initialize your environment, please run 
+This code was run on Python version 3.10. To initialize your environment, please run 
 ```bash
 bash setup.sh
 ```
@@ -23,3 +23,5 @@ cfgs/lei_baseline: experiments to recreate the KDE from Lei 2014
 cfgs/no_entropy: experiments for ablation without entropy
 cfgs/ridge_baseline: experiments for Lasso Method from Lei 2019
 
+For details on how to get MEPs data, please refer to https://github.com/yromano/cqr/tree/master/get_meps_data
+ 
