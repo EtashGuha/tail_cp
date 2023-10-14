@@ -22,6 +22,8 @@ def get_parser_args():
     parser.add_argument('--cqr', action="store_true", help='Name of the model')
     parser.add_argument('--chr', action="store_true", help='Name of the model')
     parser.add_argument('--cb', action="store_true", help='Name of the model')
+    parser.add_argument('--dcp', action="store_true", help='Name of the model')
+
     parser.add_argument('--cqr_no_clipping', action="store_true", help='Name of the model')
 
     parser.add_argument('--lei', action="store_true", help='Name of the model')

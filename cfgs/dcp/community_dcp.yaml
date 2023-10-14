@@ -1,0 +1,3 @@
+dcp: true
+dataset_name: community
+model_path: community_dcp

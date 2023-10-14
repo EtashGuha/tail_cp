@@ -1,0 +1,3 @@
+dcp: true
+dataset_name: solar
+model_path: solar_dcp

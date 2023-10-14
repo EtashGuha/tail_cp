@@ -19,6 +19,8 @@ import jax.numpy as jnp
 from conformal_bayes_code.run_sparsereg_conformal import fit_mcmc_laplace, run_cb, get_posterior
 from sheets import log_results
 from chr.run_chr import get_chr
+from chr.run_dcp import get_dcp
+
 
 def get_model(args):
     input_size, range_vals = get_input_and_range(args)
@@ -58,6 +60,8 @@ def main(args):
     input_size, range_vals = get_input_and_range(args)
     if args.chr:
         mean_coverage, std_coverage, mean_length, std_length, coverage_ce, length_ce = get_chr(args)
+    elif args.dcp:
+        mean_coverage, std_coverage, mean_length, std_length, coverage_ce, length_ce = get_dcp(args)
     elif args.cb:
         mean_coverage, std_coverage, mean_length, std_length, coverage_ce, length_ce = run_cb(X_train, y_train, X_val, y_val, args)
     elif args.cqr:

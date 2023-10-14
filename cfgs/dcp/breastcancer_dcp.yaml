@@ -1,0 +1,3 @@
+dcp: true
+dataset_name: breastcancer
+model_path: breastcancer_dcp

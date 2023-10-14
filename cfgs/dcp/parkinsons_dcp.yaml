@@ -1,0 +1,3 @@
+dcp: true
+dataset_name: parkinsons
+model_path: parkinsons_dcp
